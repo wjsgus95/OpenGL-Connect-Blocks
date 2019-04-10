@@ -1,3 +1,9 @@
+// 20_Arcball
+//      Keyboard: r: reset the arc ball to initial state
+//                a: toggle camera rotation and model rotation mode
+//      Mouse: left button: begin arc ball dragging
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -7,6 +13,10 @@
 #include <cmath>
 #include <shader.h>
 #include <cube.h>
+#include <table.h>
+#include <arcball.h>
+
+
 
 using namespace std;
 
@@ -14,35 +24,46 @@ using namespace std;
 GLFWwindow *glAllInit();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow *window, int key, int scancode, int action , int mods);
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+void cursor_position_callback(GLFWwindow *window, double x, double y);
 void render();
 
 // Global variables
-GLFWwindow *window = NULL;
+GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
-
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
-Cube *cube;
+table_t *cube;
+glm::mat4 projection, view, model;
+
+// for arcball
+float arcballSpeed = 0.2f;
+static Arcball camArcBall(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
+static Arcball modelArcBall(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+bool arcballCamRot = true;
+
 
 int main()
 {
-    window = glAllInit();
+    mainWindow = glAllInit();
     
     // shader loading and compile (by calling the constructor)
-    globalShader = new Shader("shader/5.3.vs", "shader/5.3.fs");
+    globalShader = new Shader("shader/global.vs", "shader/global.fs");
     
     // projection matrix
     globalShader->use();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+    projection = glm::perspective(glm::radians(45.0f),
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     globalShader->setMat4("projection", projection);
     
     // cube initialization
-    cube = new Cube();
+    cube = new table_t();
+
+    cout << "ARCBALL: camera rotation mode" << endl;
     
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(mainWindow)) {
         render();
         glfwPollEvents();
     }
@@ -69,7 +90,7 @@ GLFWwindow *glAllInit()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     
     // glfw window creation
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Camera Circle", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Arcball", NULL, NULL);
     if (window == NULL) {
         cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -78,6 +99,8 @@ GLFWwindow *glAllInit()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
     
     // OpenGL states
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -99,26 +122,32 @@ void render() {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                       glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
+    view = view * camArcBall.createRotationMatrix();
+    
     globalShader->use();
-    
-    // create transformations, initialize matrices
-    glm::mat4 model         = glm::mat4(1.0f);
-    glm::mat4 view          = glm::mat4(1.0f);
-    
-    // modeling transformation
-    globalShader->setMat4("model", model);
-    
-    // camera/view transformation
-    float radius = 5.0f;
-    float camX   = sin(glfwGetTime()) * radius;
-    float camZ   = cos(glfwGetTime()) * radius;
-    view = glm::lookAt(glm::vec3(camX, 1.5f, camZ), glm::vec3(0.0f, 0.0f, 0.0f),
-                       glm::vec3(0.0f, 1.0f, 0.0f));
     globalShader->setMat4("view", view);
-
+    
+    // center cube
+    model = glm::mat4(1.0f);
+    model = model * modelArcBall.createRotationMatrix();
+    globalShader->setMat4("model", model);
     cube->draw(globalShader);
     
-    glfwSwapBuffers(window);
+    // left cube
+    //model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
+    //globalShader->setMat4("model", model);
+    //cube->draw(globalShader);
+    
+    // right cube
+    //model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+    //globalShader->setMat4("model", model);
+    //cube->draw(globalShader);
+    
+    glfwSwapBuffers(mainWindow);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -129,11 +158,38 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
     SCR_WIDTH = width;
-    SCR_HEIGHT = height;
+    SCR_HEIGHT = height; 
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+    else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        camArcBall.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+        modelArcBall.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+    }
+    else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        arcballCamRot = !arcballCamRot;
+        if (arcballCamRot) {
+            cout << "ARCBALL: camera rotation mode" << endl;
+        }
+        else {
+            cout << "ARCBALL: model  rotation mode" << endl;
+        }
+    }
+}
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    if (arcballCamRot)
+        camArcBall.mouseButtonCallback( window, button, action, mods );
+    else
+        modelArcBall.mouseButtonCallback( window, button, action, mods );
+}
+
+void cursor_position_callback(GLFWwindow *window, double x, double y) {
+    if (arcballCamRot)
+        camArcBall.cursorCallback( window, x, y );
+    else
+        modelArcBall.cursorCallback( window, x, y );
 }
