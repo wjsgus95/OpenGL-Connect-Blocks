@@ -128,7 +128,6 @@ public:
     };
     
     void draw(Shader *shader) {
-        initBuffers();
         shader->use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -141,6 +140,13 @@ public:
             else if (i % 3 == 1) cubeVertices[i] += dy;
             else if (i % 3 == 2) cubeVertices[i] += dz;
         }
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vSize, cubeVertices);                  // copy verts at offset 0
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);  // position attrib
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     };
 
     void move_right() {
