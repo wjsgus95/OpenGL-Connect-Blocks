@@ -6,12 +6,35 @@ public:
     
     // vertex position array
     GLfloat cubeVertices[72]  = { // initialized as size = 1 for each dimension, 72 elements
-        .25f, .25f, .25f,  -.25f, .25f, .25f,  -.25f,-.25f, .25f,  .25f,-.25f, .25f, // v0,v1,v2,v3 (front)
-        .25f, .25f, .25f,   .25f,-.25f, .25f,   .25f,-.25f,-.25f,  .25f, .25f,-.25f, // v0,v3,v4,v25 (right)
-        .25f, .25f, .25f,   .25f, .25f,-.25f,  -.25f, .25f,-.25f, -.25f, .25f, .25f, // v0,v25,v6,v1 (top)
-        -.25f, .25f, .25f,  -.25f, .25f,-.25f,  -.25f,-.25f,-.25f, -.25f,-.25f, .25f, // v1,v6,v7,v2 (left)
-        -.25f,-.25f,-.25f,   .25f,-.25f,-.25f,   .25f,-.25f, .25f, -.25f,-.25f, .25f, // v7,v4,v3,v2 (bottom)
-        .25f,-.25f,-.25f,  -.25f,-.25f,-.25f,  -.25f, .25f,-.25f,  .25f, .25f,-.25f  // v4,v7,v6,v25 (back)
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, // v0,v1,v2,v3 (front)
+
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, // v0,v3,v4,v25 (right)
+
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, // v0,v25,v6,v1 (top)
+
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, // v1,v6,v7,v2 (left)
+
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE, BLOCK_HALF_EDGE, // v7,v4,v3,v2 (bottom)
+
+        BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        -BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE,
+        BLOCK_HALF_EDGE, BLOCK_HALF_EDGE,-BLOCK_HALF_EDGE  // v4,v7,v6,v25 (back)
     };
     
     // normal array

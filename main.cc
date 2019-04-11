@@ -80,10 +80,8 @@ int main()
     table = new table_t();
     
     // My block initialization.
-    myblock = new my_block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + CUBE_HALF_EDGE);
+    myblock = new my_block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
 
-    cout << "ARCBALL: camera rotation mode" << endl;
-    
     // render loop
     // -----------
     while (!glfwWindowShouldClose(mainWindow)) {
@@ -206,6 +204,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
         myblock->move_down();
+    }
+    else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        //TODO: bind to my block if there's any adjacent blocks.
     }
 }
 
