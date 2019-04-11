@@ -1,21 +1,28 @@
-// 20_Arcball
+// 20_rotor_t
 //      Keyboard: r: reset the arc ball to initial state
 //                a: toggle camera rotation and model rotation mode
 //      Mouse: left button: begin arc ball dragging
 
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+
 #include <iostream>
 #include <cmath>
+
 #include <shader.h>
-#include <cube.h>
-#include <table.h>
-#include <arcball.h>
+#include <getbmp.h>
+
+#include "def.h"
+#include "cube.h"
+#include "myblock.h"
+#include "table.h"
+#include "rotor.h"
 
 
 
@@ -28,20 +35,25 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action , int mo
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow *window, double x, double y);
 void render();
+void loadTexture();
 
 // Global variables
 GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
-table_t *cube;
+table_t *table;
+myblock_t* myblock;
 glm::mat4 projection, view, model;
 
 // for arcball
 float arcballSpeed = 0.2f;
-static Arcball camArcBall(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
-static Arcball modelArcBall(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
+static rotor_t modelRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
 bool arcballCamRot = true;
+
+// for texture
+static unsigned int texture; // Array of texture ids.
 
 
 int main()
@@ -56,9 +68,14 @@ int main()
     projection = glm::perspective(glm::radians(45.0f),
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     globalShader->setMat4("projection", projection);
+
+    loadTexture();
     
-    // cube initialization
-    cube = new table_t();
+    // Table initialization.
+    table = new table_t();
+    
+    // My block initialization.
+    myblock = new myblock_t();
 
     cout << "ARCBALL: camera rotation mode" << endl;
     
@@ -91,7 +108,7 @@ GLFWwindow *glAllInit()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     
     // glfw window creation
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Arcball", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "rotor_t", NULL, NULL);
     if (window == NULL) {
         cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -125,25 +142,24 @@ void render() {
     
     view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                        glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
-    view = view * camArcBall.createRotationMatrix();
+    view = view * camRotor.createRotationMatrix();
     
-    //cout << glm::to_string(view) << endl;
-
     globalShader->use();
     globalShader->setMat4("view", view);
     
-    // center cube
+    // My block.
     model = glm::mat4(1.0f);
-    model = model * modelArcBall.createRotationMatrix();
+    model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
-    cube->draw(globalShader);
+    myblock->draw(globalShader);
     
-    // left cube
-    //model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
-    //globalShader->setMat4("model", model);
-    //cube->draw(globalShader);
-    
+    // Table
+    model = glm::mat4(1.0f);
+    model = model * modelRotor.createRotationMatrix();
+    globalShader->setMat4("model", model);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    table->draw(globalShader);
+
     // right cube
     //model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -169,8 +185,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, true);
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        camArcBall.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-        modelArcBall.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+        camRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+        modelRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
     }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         arcballCamRot = !arcballCamRot;
@@ -185,14 +201,53 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     if (arcballCamRot)
-        camArcBall.mouseButtonCallback( window, button, action, mods );
+        camRotor.mouseButtonCallback( window, button, action, mods );
     else
-        modelArcBall.mouseButtonCallback( window, button, action, mods );
+        modelRotor.mouseButtonCallback( window, button, action, mods );
 }
 
 void cursor_position_callback(GLFWwindow *window, double x, double y) {
     if (arcballCamRot)
-        camArcBall.cursorCallback( window, x, y );
+        camRotor.cursorCallback( window, x, y );
     else
-        modelArcBall.cursorCallback( window, x, y );
+        modelRotor.cursorCallback( window, x, y );
 }
+
+void loadTexture() {
+
+    // Create texture ids.
+    glGenTextures(1, &texture);
+
+    // All upcomming GL_TEXTURE_2D operations now on "texture" object
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Set texture parameters for wrapping.
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+    // Set texture parameters for filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Load the image from bmp file
+    BitMapFile *image;
+    char texFileName[] = "img/grid.bmp";
+    if (!(image = getbmp(texFileName))) {
+        cout << texFileName << " open error ... exit" << endl;
+        exit(1);
+    }
+    else {
+        cout << texFileName << " loaded. size: " << image->sizeX << " x " << image->sizeY << endl;
+    }
+
+    // Specify image data for currently active texture object.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->sizeX, image->sizeY, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, image->data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+}
+
+

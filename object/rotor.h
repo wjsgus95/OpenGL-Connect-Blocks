@@ -1,12 +1,12 @@
 //
-//  Arcball.h
+//  rotor_t.h
 //
 //  Created by Saburo Okita on 12/03/14.
 //  Copyright (c) 2014 Saburo Okita. All rights reserved.
 //
 
-#ifndef __Arcball__Arcball__
-#define __Arcball__Arcball__ 
+#ifndef __ROTOR_H__
+#define __ROTOR_H__
 
 #include <iostream>
 
@@ -21,7 +21,7 @@
 
 using namespace std;
 
-class Arcball {
+class rotor_t {
 private:
     int windowWidth;
     int windowHeight;
@@ -41,7 +41,7 @@ public:
      * Constructor.
      * @param roll_speed: the speed of rotation
      */
-    Arcball(int window_width, int window_height, GLfloat roll_speed, bool x_axis, bool y_axis)
+    rotor_t(int window_width, int window_height, GLfloat roll_speed, bool x_axis, bool y_axis)
     {
         init(window_width, window_height, roll_speed, x_axis, y_axis);
     }
@@ -73,18 +73,8 @@ public:
         if( xAxis )
             coord.x =  (2 * (float)x - windowWidth ) / windowWidth;
         
-        //if( yAxis )
-        //    coord.y = -(2 * (float)y - windowHeight) / windowHeight;
-        
         /* Clamp it to border of the windows, comment these codes to allow rotation when cursor is not over window */
         coord.x = glm::clamp( coord.x, -1.0f, 1.0f );
-        //coord.y = glm::clamp( coord.y, -1.0f, 1.0f );
-        
-        //float length_squared = coord.x * coord.x + coord.y * coord.y;
-        //if( length_squared <= 1.0 ) {
-        //    coord.z = sqrt( 1.0 - length_squared );
-        //} else
-        //    coord = glm::normalize( coord );
         
         return coord;
     }
@@ -100,25 +90,28 @@ public:
     }
     
     void cursorCallback( GLFWwindow *window, double x, double y ){
-        if( mouseEvent == 0 )
+        if( mouseEvent == 0 ) {
+            angle = 0.0f;
             return;
-        else if( mouseEvent == 1 ) {
+        } else if( mouseEvent == 1 ) {
             /* Start of trackball, remember the first position */
             prevPos     = toScreenCoord( x, y );
             mouseEvent  = 2;
             return;
         }
-        
+
         /* Tracking the subsequent */
         currPos  = toScreenCoord( x, y );
-        
+
         /* Calculate the angle in radians, and clamp it between 0 and 90 degrees */
         //angle    = acos( std::min(1.0f, glm::dot(prevPos, currPos) ));
-        float dot = (float)glm::dot(prevPos, currPos);
-        angle = acos(((1.0f < dot) ? 1.0f : dot));
+        //float dot = (float)glm::dot(prevPos, currPos);
+        float scale_down = 0.4f;
+        float dist = (prevPos.x - currPos.x) * scale_down;
+        angle = acos(((1.0f < dist) ? 1.0f : dist));
         
         /* Cross product to get the rotation axis */
-        camAxis = glm::vec3(0.0f, 0.0f, currPos.x - prevPos.x);
+        camAxis = glm::vec3(0.0f, 0.0f, 1.0f);
     }
     
     /**
@@ -126,14 +119,12 @@ public:
      * multiply this matrix with view (or model) matrix to rotate the camera (or model)
      */
     glm::mat4 createRotationMatrix() {
-        angle = angle - floor(angle/(M_PI/2)) * (M_PI/2);
-
-        cout << "angle: " <<  angle << endl;
-        cout << "rollSpeed: " << rollSpeed << endl;
+        //cout << "prevPos.x: " << prevPos.x << endl;
+        //cout << "currPos.x: " << currPos.x << endl;
 
         return glm::rotate( glm::degrees(angle) * rollSpeed, camAxis );
     }
     
 };
 
-#endif /* defined(__Arcball__Arcball__) */
+#endif /* defined(__rotor_t__rotor_t__) */

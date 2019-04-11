@@ -14,12 +14,12 @@
 //                              2: color attrib (vec4), and 3: texture coordinate attrib (vec2))
 // Fragment shader: should catch the vertex color from the vertex shader
 
-#ifndef CUBE_H
-#define CUBE_H
+#ifndef __MYBLOCK_H__
+#define __MYBLOCK_H__
 
 #include "shader.h"
 
-class Cube {
+class myblock_t {
 public:
     
     // vertex position array
@@ -45,17 +45,12 @@ public:
     // colour array
     GLfloat cubeColors[96] = { // initialized as RGBA sollid color for each face, 96 elements
         //1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v1,v2,v3 (front)
-        //1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1, // v0,v3,v4,v5 (right)
-        //0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // v0,v5,v6,v1 (top)
-        //0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1, // v1,v6,v7,v2 (left)
-        //0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // v7,v4,v3,v2 (bottom)
-        //1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1  // v4,v7,v6,v5 (back)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v1,v2,v3 (front)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v3,v4,v5 (right)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v5,v6,v1 (top)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v6,v7,v2 (left)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v7,v4,v3,v2 (bottom)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1  // v4,v7,v6,v5 (back)
+        0, 0, 0, 1,   0, 0, 0, 1,   0, 0, 0, 1,   0, 0, 0, 1, // v0,v1,v2,v3 (front)
+        1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1, // v0,v3,v4,v5 (right)
+        0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // v0,v5,v6,v1 (top)
+        0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1, // v1,v6,v7,v2 (left)
+        0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // v7,v4,v3,v2 (bottom)
+        1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1  // v4,v7,v6,v5 (back)
     };
     
     // texture coord array
@@ -88,11 +83,11 @@ public:
     u_int64_t cSize = sizeof(cubeColors);
     u_int64_t tSize = sizeof(cubeTexCoords);
     
-    Cube() {
+    myblock_t() {
         initBuffers();
     };
     
-    Cube(float dx, float dy, float dz, float s) {
+    myblock_t(float dx, float dy, float dz, float s) {
         scale(s);
         translate(dx, dy, dz);
         initBuffers();
@@ -111,7 +106,7 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, vSize, cubeVertices);                  // copy verts at offset 0
         glBufferSubData(GL_ARRAY_BUFFER, vSize, nSize, cubeNormals);               // copy norms after verts
         glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize, cSize, cubeColors);          // copy cols after norms
-        glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize+cSize, tSize, cubeTexCoords); // copy texs after cols
+        //glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize+cSize, tSize, cubeTexCoords); // copy texs after cols
         
         // copy index data to EBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -121,16 +116,14 @@ public:
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);  // position attrib
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)vSize); // normal attrib
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(vSize+nSize)); //color attrib
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)(vSize+nSize+cSize)); // tex coord
+        //glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)(vSize+nSize+cSize)); // tex coord
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
+        //glEnableVertexAttribArray(3);
         
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-
-        scale(0.2f);
     };
     
     void draw(Shader *shader) {

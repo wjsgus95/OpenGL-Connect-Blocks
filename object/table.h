@@ -14,8 +14,8 @@
 //                              2: color attrib (vec4), and 3: texture coordinate attrib (vec2))
 // Fragment shader: should catch the vertex color from the vertex shader
 
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef __TABLE_H__
+#define __TABLE_H__
 
 #include "shader.h"
 
@@ -85,10 +85,10 @@ public:
     unsigned int VBO;
     unsigned int EBO;
     
-    unsigned int vSize = sizeof(tableVertices);
-    unsigned int nSize = sizeof(tableNormals);
-    unsigned int cSize = sizeof(tableColors);
-    unsigned int tSize = sizeof(tableTexCoords);
+    u_int64_t vSize = sizeof(tableVertices);
+    u_int64_t nSize = sizeof(tableNormals);
+    u_int64_t cSize = sizeof(tableColors);
+    u_int64_t tSize = sizeof(tableTexCoords);
     
     table_t() {
         initBuffers();
