@@ -50,8 +50,8 @@ glm::mat4 projection, view, model;
 // for arcball
 float arcballSpeed = 0.2f;
 static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
-static rotor_t modelRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-bool arcballCamRot = true;
+//static rotor_t modelRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+//bool arcballCamRot = true;
 
 // for texture
 static unsigned int texture; // Array of texture ids.
@@ -164,7 +164,6 @@ void render() {
     // Table
     tableShader->use();
     model = glm::mat4(1.0f);
-    model = model * modelRotor.createRotationMatrix();
     tableShader->setMat4("model", model);
     glBindTexture(GL_TEXTURE_2D, texture);
     table->draw(tableShader);
@@ -195,16 +194,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         camRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-        modelRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-    }
-    else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        arcballCamRot = !arcballCamRot;
-        if (arcballCamRot) {
-            cout << "ARCBALL: camera rotation mode" << endl;
-        }
-        else {
-            cout << "ARCBALL: model  rotation mode" << endl;
-        }
+        //modelRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
     }
     else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         myblock->move_right();
@@ -221,17 +211,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-    if (arcballCamRot)
-        camRotor.mouseButtonCallback( window, button, action, mods );
-    else
-        modelRotor.mouseButtonCallback( window, button, action, mods );
+    camRotor.mouseButtonCallback( window, button, action, mods );
 }
 
 void cursor_position_callback(GLFWwindow *window, double x, double y) {
-    if (arcballCamRot)
-        camRotor.cursorCallback( window, x, y );
-    else
-        modelRotor.cursorCallback( window, x, y );
+    camRotor.cursorCallback( window, x, y );
 }
 
 void loadTexture() {
