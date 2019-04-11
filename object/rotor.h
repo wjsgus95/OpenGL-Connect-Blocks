@@ -121,7 +121,7 @@ public:
     glm::mat4 createRotationMatrix() {
         //cout << "prevPos.x: " << prevPos.x << endl;
         //cout << "currPos.x: " << currPos.x << endl;
-        cout << "angle: " << angle << endl;
+        //cout << "angle: " << angle << endl;
 
         return glm::rotate( glm::degrees(angle) * rollSpeed, camAxis );
     }

@@ -17,6 +17,7 @@
 #ifndef __MYBLOCK_H__
 #define __MYBLOCK_H__
 
+#include "def.h"
 #include "shader.h"
 
 class myblock_t {
@@ -127,6 +128,7 @@ public:
     };
     
     void draw(Shader *shader) {
+        initBuffers();
         shader->use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -140,6 +142,19 @@ public:
             else if (i % 3 == 2) cubeVertices[i] += dz;
         }
     };
+
+    void move_right() {
+        translate(0.0f, ONE_GRID, 0.0f);
+    }
+    void move_left() {
+        translate(0.0f, -ONE_GRID, 0.0f);
+    }
+    void move_up() {
+        translate(-ONE_GRID, 0.0f, 0.0f);
+    }
+    void move_down() {
+        translate(ONE_GRID, 0.0f, 0.0f);
+    }
     
     void scale(float s) {
         for (int i = 0; i < 72; i++)

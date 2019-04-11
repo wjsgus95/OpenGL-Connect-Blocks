@@ -206,6 +206,18 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             cout << "ARCBALL: model  rotation mode" << endl;
         }
     }
+    else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        myblock->move_right();
+    }
+    else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        myblock->move_left();
+    }
+    else if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
+        myblock->move_up();
+    }
+    else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+        myblock->move_down();
+    }
 }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
