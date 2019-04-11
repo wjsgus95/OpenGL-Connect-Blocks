@@ -1,35 +1,17 @@
+#ifndef __BLOCK_BASE_H__
+#define __BLOCK_BASE_H__
 
-// A cube has 6 sides and each side has 4 vertices, therefore, the total number
-// of vertices is 24 (6 sides * 4 verts), and 72 floats in the vertex array
-// since each vertex has 3 components (x,y,z) (= 24 * 3)
-//    v6----- v5
-//   /|      /|
-//  v1------v0|
-//  | |     | |
-//  | v7----|-v4
-//  |/      |/
-//  v2------v3
-//
-// Vertex shader: the location (0: position attrib (vec3), 1: normal attrib (vec3),
-//                              2: color attrib (vec4), and 3: texture coordinate attrib (vec2))
-// Fragment shader: should catch the vertex color from the vertex shader
-
-#ifndef CUBE_H
-#define CUBE_H
-
-#include "shader.h"
-
-class Cube {
+class block_base_t {
 public:
     
     // vertex position array
     GLfloat cubeVertices[72]  = { // initialized as size = 1 for each dimension, 72 elements
-        .5f, .5f, .5f,  -.5f, .5f, .5f,  -.5f,-.5f, .5f,  .5f,-.5f, .5f, // v0,v1,v2,v3 (front)
-        .5f, .5f, .5f,   .5f,-.5f, .5f,   .5f,-.5f,-.5f,  .5f, .5f,-.5f, // v0,v3,v4,v5 (right)
-        .5f, .5f, .5f,   .5f, .5f,-.5f,  -.5f, .5f,-.5f, -.5f, .5f, .5f, // v0,v5,v6,v1 (top)
-        -.5f, .5f, .5f,  -.5f, .5f,-.5f,  -.5f,-.5f,-.5f, -.5f,-.5f, .5f, // v1,v6,v7,v2 (left)
-        -.5f,-.5f,-.5f,   .5f,-.5f,-.5f,   .5f,-.5f, .5f, -.5f,-.5f, .5f, // v7,v4,v3,v2 (bottom)
-        .5f,-.5f,-.5f,  -.5f,-.5f,-.5f,  -.5f, .5f,-.5f,  .5f, .5f,-.5f  // v4,v7,v6,v5 (back)
+        .25f, .25f, .25f,  -.25f, .25f, .25f,  -.25f,-.25f, .25f,  .25f,-.25f, .25f, // v0,v1,v2,v3 (front)
+        .25f, .25f, .25f,   .25f,-.25f, .25f,   .25f,-.25f,-.25f,  .25f, .25f,-.25f, // v0,v3,v4,v25 (right)
+        .25f, .25f, .25f,   .25f, .25f,-.25f,  -.25f, .25f,-.25f, -.25f, .25f, .25f, // v0,v25,v6,v1 (top)
+        -.25f, .25f, .25f,  -.25f, .25f,-.25f,  -.25f,-.25f,-.25f, -.25f,-.25f, .25f, // v1,v6,v7,v2 (left)
+        -.25f,-.25f,-.25f,   .25f,-.25f,-.25f,   .25f,-.25f, .25f, -.25f,-.25f, .25f, // v7,v4,v3,v2 (bottom)
+        .25f,-.25f,-.25f,  -.25f,-.25f,-.25f,  -.25f, .25f,-.25f,  .25f, .25f,-.25f  // v4,v7,v6,v25 (back)
     };
     
     // normal array
@@ -45,17 +27,12 @@ public:
     // colour array
     GLfloat cubeColors[96] = { // initialized as RGBA sollid color for each face, 96 elements
         //1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v1,v2,v3 (front)
-        //1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1, // v0,v3,v4,v5 (right)
-        //0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // v0,v5,v6,v1 (top)
-        //0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1, // v1,v6,v7,v2 (left)
-        //0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // v7,v4,v3,v2 (bottom)
-        //1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1  // v4,v7,v6,v5 (back)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v1,v2,v3 (front)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v3,v4,v5 (right)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v5,v6,v1 (top)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v6,v7,v2 (left)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v7,v4,v3,v2 (bottom)
-        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1  // v4,v7,v6,v5 (back)
+        0, 0, 0, 1,   0, 0, 0, 1,   0, 0, 0, 1,   0, 0, 0, 1, // v0,v1,v2,v3 (front)
+        1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1,   1, 1, 0, 1, // v0,v3,v4,v5 (right)
+        0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // v0,v5,v6,v1 (top)
+        0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1, // v1,v6,v7,v2 (left)
+        0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // v7,v4,v3,v2 (bottom)
+        1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1  // v4,v7,v6,v5 (back)
     };
     
     // texture coord array
@@ -88,11 +65,11 @@ public:
     u_int64_t cSize = sizeof(cubeColors);
     u_int64_t tSize = sizeof(cubeTexCoords);
     
-    Cube() {
+    block_base_t() {
         initBuffers();
     };
     
-    Cube(float dx, float dy, float dz, float s) {
+    block_base_t(float dx, float dy, float dz, float s=1.0f) {
         scale(s);
         translate(dx, dy, dz);
         initBuffers();
@@ -129,8 +106,6 @@ public:
         
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-
-        scale(0.2f);
     };
     
     void draw(Shader *shader) {
@@ -140,13 +115,35 @@ public:
         glBindVertexArray(0);
     };
     
-    void translate(float dx, float dy, float dz) {
+    virtual void translate(float dx, float dy, float dz) {
         for (int i = 0; i < 72; i++) {
             if (i % 3 == 0) cubeVertices[i] += dx;
             else if (i % 3 == 1) cubeVertices[i] += dy;
             else if (i % 3 == 2) cubeVertices[i] += dz;
         }
+
+        // Update Buffers.
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vSize, cubeVertices);                  // copy verts at offset 0
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);     // position attrib
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     };
+
+    void move_right() {
+        translate(0.0f, GRID_SIZE, 0.0f);
+    }
+    void move_left() {
+        translate(0.0f, -GRID_SIZE, 0.0f);
+    }
+    void move_up() {
+        translate(-GRID_SIZE, 0.0f, 0.0f);
+    }
+    void move_down() {
+        translate(GRID_SIZE, 0.0f, 0.0f);
+    }
     
     void scale(float s) {
         for (int i = 0; i < 72; i++)

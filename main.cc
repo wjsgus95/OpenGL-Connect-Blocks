@@ -19,8 +19,8 @@
 #include <getbmp.h>
 
 #include "def.h"
-#include "cube.h"
-#include "myblock.h"
+#include "block.h"
+#include "my_block.h"
 #include "table.h"
 #include "rotor.h"
 
@@ -44,7 +44,7 @@ Shader *tableShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 table_t *table;
-myblock_t* myblock;
+my_block_t* myblock;
 glm::mat4 projection, view, model;
 
 // for arcball
@@ -80,7 +80,7 @@ int main()
     table = new table_t();
     
     // My block initialization.
-    myblock = new myblock_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + CUBE_HALF_EDGE);
+    myblock = new my_block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + CUBE_HALF_EDGE);
 
     cout << "ARCBALL: camera rotation mode" << endl;
     
