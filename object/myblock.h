@@ -24,12 +24,12 @@ public:
     
     // vertex position array
     GLfloat cubeVertices[72]  = { // initialized as size = 1 for each dimension, 72 elements
-        .5f, .5f, .5f,  -.5f, .5f, .5f,  -.5f,-.5f, .5f,  .5f,-.5f, .5f, // v0,v1,v2,v3 (front)
-        .5f, .5f, .5f,   .5f,-.5f, .5f,   .5f,-.5f,-.5f,  .5f, .5f,-.5f, // v0,v3,v4,v5 (right)
-        .5f, .5f, .5f,   .5f, .5f,-.5f,  -.5f, .5f,-.5f, -.5f, .5f, .5f, // v0,v5,v6,v1 (top)
-        -.5f, .5f, .5f,  -.5f, .5f,-.5f,  -.5f,-.5f,-.5f, -.5f,-.5f, .5f, // v1,v6,v7,v2 (left)
-        -.5f,-.5f,-.5f,   .5f,-.5f,-.5f,   .5f,-.5f, .5f, -.5f,-.5f, .5f, // v7,v4,v3,v2 (bottom)
-        .5f,-.5f,-.5f,  -.5f,-.5f,-.5f,  -.5f, .5f,-.5f,  .5f, .5f,-.5f  // v4,v7,v6,v5 (back)
+        .25f, .25f, .25f,  -.25f, .25f, .25f,  -.25f,-.25f, .25f,  .25f,-.25f, .25f, // v0,v1,v2,v3 (front)
+        .25f, .25f, .25f,   .25f,-.25f, .25f,   .25f,-.25f,-.25f,  .25f, .25f,-.25f, // v0,v3,v4,v25 (right)
+        .25f, .25f, .25f,   .25f, .25f,-.25f,  -.25f, .25f,-.25f, -.25f, .25f, .25f, // v0,v25,v6,v1 (top)
+        -.25f, .25f, .25f,  -.25f, .25f,-.25f,  -.25f,-.25f,-.25f, -.25f,-.25f, .25f, // v1,v6,v7,v2 (left)
+        -.25f,-.25f,-.25f,   .25f,-.25f,-.25f,   .25f,-.25f, .25f, -.25f,-.25f, .25f, // v7,v4,v3,v2 (bottom)
+        .25f,-.25f,-.25f,  -.25f,-.25f,-.25f,  -.25f, .25f,-.25f,  .25f, .25f,-.25f  // v4,v7,v6,v25 (back)
     };
     
     // normal array
@@ -87,7 +87,7 @@ public:
         initBuffers();
     };
     
-    myblock_t(float dx, float dy, float dz, float s) {
+    myblock_t(float dx, float dy, float dz, float s=1.0f) {
         scale(s);
         translate(dx, dy, dz);
         initBuffers();

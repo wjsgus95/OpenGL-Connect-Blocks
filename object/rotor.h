@@ -108,7 +108,7 @@ public:
         //float dot = (float)glm::dot(prevPos, currPos);
         float scale_down = 0.4f;
         float dist = (prevPos.x - currPos.x) * scale_down;
-        angle = acos(((1.0f < dist) ? 1.0f : dist));
+        angle = atan(((1.0f < dist) ? 1.0f : dist));
         
         /* Cross product to get the rotation axis */
         camAxis = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -121,6 +121,7 @@ public:
     glm::mat4 createRotationMatrix() {
         //cout << "prevPos.x: " << prevPos.x << endl;
         //cout << "currPos.x: " << currPos.x << endl;
+        cout << "angle: " << angle << endl;
 
         return glm::rotate( glm::degrees(angle) * rollSpeed, camAxis );
     }

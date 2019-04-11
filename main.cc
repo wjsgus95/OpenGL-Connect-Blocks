@@ -80,7 +80,7 @@ int main()
     table = new table_t();
     
     // My block initialization.
-    myblock = new myblock_t();
+    myblock = new myblock_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + CUBE_HALF_EDGE);
 
     cout << "ARCBALL: camera rotation mode" << endl;
     
@@ -157,7 +157,7 @@ void render() {
     // My block.
     globalShader->use();
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
+    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
     myblock->draw(globalShader);
     
