@@ -194,7 +194,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         camRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-        //modelRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
     }
     else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         myblock->move_right();
