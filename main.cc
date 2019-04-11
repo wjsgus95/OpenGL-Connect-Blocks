@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 #include <shader.h>
 #include <getbmp.h>
@@ -23,7 +24,6 @@
 #include "my_block.h"
 #include "table.h"
 #include "rotor.h"
-
 
 
 using namespace std;
@@ -46,6 +46,7 @@ unsigned int SCR_HEIGHT = 768;
 table_t *table;
 my_block_t* myblock;
 glm::mat4 projection, view, model;
+vector<block_t*> blocks;
 
 // for arcball
 float arcballSpeed = 0.2f;

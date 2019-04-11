@@ -22,7 +22,9 @@
 
 class block_t : public block_base_t {
 public:
-    block_t() : block_base_t() {}
+    block_t() : block_base_t() {
+        //TODO: translate to random place on grid.
+    }
     block_t(float dx, float dy, float dz, float s=1.0f) :
         block_base_t(dx, dy, dz, s) {
     }

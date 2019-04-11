@@ -28,6 +28,12 @@ class my_block_t : public block_base_t {
 public:
     my_block_t() : block_base_t() {}
 
+    ~my_block_t() {
+        for(unsigned i = 0; i < bound_blocks.size(); i++) {
+            delete bound_blocks[i];
+        }
+    }
+
     my_block_t(float dx, float dy, float dz, float s=1.0f) :
         block_base_t(dx, dy, dz, s) {
     }

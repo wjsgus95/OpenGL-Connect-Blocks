@@ -91,6 +91,8 @@ public:
     block_base_t() {
         initBuffers();
     };
+
+    virtual ~block_base_t() {}
     
     block_base_t(float dx, float dy, float dz, float s=1.0f) {
         scale(s);
