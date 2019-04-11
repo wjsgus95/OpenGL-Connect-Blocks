@@ -106,7 +106,7 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, vSize, cubeVertices);                  // copy verts at offset 0
         glBufferSubData(GL_ARRAY_BUFFER, vSize, nSize, cubeNormals);               // copy norms after verts
         glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize, cSize, cubeColors);          // copy cols after norms
-        //glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize+cSize, tSize, cubeTexCoords); // copy texs after cols
+        glBufferSubData(GL_ARRAY_BUFFER, vSize+nSize+cSize, tSize, cubeTexCoords); // copy texs after cols
         
         // copy index data to EBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -116,11 +116,11 @@ public:
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);  // position attrib
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)vSize); // normal attrib
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(vSize+nSize)); //color attrib
-        //glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)(vSize+nSize+cSize)); // tex coord
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)(vSize+nSize+cSize)); // tex coord
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
-        //glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(3);
         
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);

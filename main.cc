@@ -40,6 +40,7 @@ void loadTexture();
 // Global variables
 GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
+Shader *tableShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 table_t *table;
@@ -62,12 +63,16 @@ int main()
     
     // shader loading and compile (by calling the constructor)
     globalShader = new Shader("shader/global.vs", "shader/global.fs");
+    tableShader = new Shader("shader/table.vs", "shader/table.fs");
     
     // projection matrix
     globalShader->use();
     projection = glm::perspective(glm::radians(45.0f),
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     globalShader->setMat4("projection", projection);
+
+    tableShader->use();
+    tableShader->setMat4("projection", projection);
 
     loadTexture();
     
@@ -146,19 +151,23 @@ void render() {
     
     globalShader->use();
     globalShader->setMat4("view", view);
+    tableShader->use();
+    tableShader->setMat4("view", view);
     
     // My block.
+    globalShader->use();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
     myblock->draw(globalShader);
     
     // Table
+    tableShader->use();
     model = glm::mat4(1.0f);
     model = model * modelRotor.createRotationMatrix();
-    globalShader->setMat4("model", model);
+    tableShader->setMat4("model", model);
     glBindTexture(GL_TEXTURE_2D, texture);
-    table->draw(globalShader);
+    table->draw(tableShader);
 
     // right cube
     //model = glm::mat4(1.0f);
