@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <cmath>
 #include <shader.h>
@@ -126,6 +127,8 @@ void render() {
                        glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
     view = view * camArcBall.createRotationMatrix();
     
+    //cout << glm::to_string(view) << endl;
+
     globalShader->use();
     globalShader->setMat4("view", view);
     

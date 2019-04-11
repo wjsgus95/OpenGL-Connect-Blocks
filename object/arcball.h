@@ -12,11 +12,14 @@
 
 #include <GLFW/glfw3.h>
 
+#include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+
+using namespace std;
 
 class Arcball {
 private:
@@ -123,6 +126,11 @@ public:
      * multiply this matrix with view (or model) matrix to rotate the camera (or model)
      */
     glm::mat4 createRotationMatrix() {
+        angle = angle - floor(angle/(M_PI/2)) * (M_PI/2);
+
+        cout << "angle: " <<  angle << endl;
+        cout << "rollSpeed: " << rollSpeed << endl;
+
         return glm::rotate( glm::degrees(angle) * rollSpeed, camAxis );
     }
     

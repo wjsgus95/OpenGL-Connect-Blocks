@@ -1,9 +1,9 @@
-# Rolling Ball
-Reach the finish line as fast you can!
+# Connect the Blocks 
 
 # Depenendcies
-OpenGL(GLFW, GLEW, GLM)
+OpenGL(GLFW, GLEW, GLM, GLU)
 
-# Build Environment
+# Dev Environment Setup
 Ubuntu 18.04LTS
+
 g++ 7.3.0
