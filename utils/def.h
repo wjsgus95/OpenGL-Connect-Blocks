@@ -1,8 +1,14 @@
 #ifndef __DEF_H__
 #define __DEF_H__
 
+#include <vector>
+#include <cmath>
+
 // For epsilon difference.
-#define EPSILON 1e-6f
+#define EPSILON 1e-9f
+
+// Are two floats within epsilon difference.
+#define IS_CLOSE(x,y) (abs((x)-(y)<EPSILON)
 
 // Table z-axis thickness.
 #define TABLE_HEIGHT 0.15f
@@ -25,7 +31,8 @@
 // Number of blocks scattered on the grid.
 #define NUM_BLOCKS 7
 
-float grid_centers[] = {
+//float grid_centers[] = {
+std::vector<float> grid_centers = {
     GRID_START_Y,
     GRID_START_Y + 1 * GRID_SIZE,
     GRID_START_Y + 2 * GRID_SIZE,

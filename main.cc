@@ -21,7 +21,6 @@
 
 #include "def.h"
 #include "block.h"
-#include "my_block.h"
 #include "table.h"
 #include "rotor.h"
 
@@ -41,10 +40,11 @@ void loadTexture();
 GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
+Shader *lineShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 table_t *table;
-my_block_t* myblock;
+block_t* my_block;
 glm::mat4 projection, view, model;
 vector<block_t*> blocks;
 
@@ -65,15 +65,19 @@ int main()
     // shader loading and compile (by calling the constructor)
     globalShader = new Shader("shader/global.vs", "shader/global.fs");
     tableShader = new Shader("shader/table.vs", "shader/table.fs");
+    lineShader = new Shader("shader/lines.vs", "shader/lines.fs");
     
     // projection matrix
-    globalShader->use();
     projection = glm::perspective(glm::radians(45.0f),
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    globalShader->use();
     globalShader->setMat4("projection", projection);
 
     tableShader->use();
     tableShader->setMat4("projection", projection);
+
+    lineShader->use();
+    lineShader->setMat4("projection", projection);
 
     loadTexture();
     
@@ -81,7 +85,13 @@ int main()
     table = new table_t();
     
     // My block initialization.
-    myblock = new my_block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
+    //my_block = new block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
+
+    // Initialize blocks.
+    block_t::init_random_placement(/*num_blocks*/8);
+    
+    // Choose random block as starting block.
+    my_block = block_t::get_starting_block();
 
     // render loop
     // -----------
@@ -152,13 +162,20 @@ void render() {
     globalShader->setMat4("view", view);
     tableShader->use();
     tableShader->setMat4("view", view);
+    lineShader->use();
+    lineShader->setMat4("view", view);
     
-    // My block.
+    // Blocks
     globalShader->use();
     model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
-    myblock->draw(globalShader);
+
+    lineShader->use();
+    model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
+    lineShader->setMat4("model", model);
+    my_block->draw(globalShader, lineShader);
     
     // Table
     tableShader->use();
@@ -195,16 +212,16 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         camRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
     }
     else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        myblock->move_right();
+        my_block->move_right();
     }
     else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        myblock->move_left();
+        my_block->move_left();
     }
     else if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
-        myblock->move_up();
+        my_block->move_up();
     }
     else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-        myblock->move_down();
+        my_block->move_down();
     }
     else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         //TODO: bind to my block if there's any adjacent blocks.

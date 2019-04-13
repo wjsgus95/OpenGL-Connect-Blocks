@@ -10,7 +10,7 @@ SRC = main.cc
 CC = g++
 
 # Compiler Options
-CFLAGS = -g -O3 -I utils -I object
+CFLAGS = -g -I utils -I object
 # Linker Options
 LDFLAG = -lGL -lm -lGLU -lGLEW -lglfw
 

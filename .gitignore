@@ -1,3 +1,6 @@
 # Executable
 ConnectBlocks
 
+# Swap files(VIM)
+*.swp
+
