@@ -189,6 +189,7 @@ public:
             block_t* block = all_blocks[id];
             translatable = block->is_block_translatable(dx, dy) && translatable;
         }
+        translatable = this->is_block_translatable(dx, dy) && translatable;
         if(!translatable) { 
             cerr << "block can't move!" << endl;
             return;
@@ -205,13 +206,27 @@ public:
     bool is_block_translatable(float dx, float dy) {
         // Make sure block is on the grid.
         if(cubeVertices[0] + dx < -GRID_START_X || cubeVertices[0] + dx > GRID_START_X+GRID_SIZE) {
+            //cout << "block " << id << " off x grid" << endl;
             return false;
         }
         // Make sure block is on the grid.
         if(cubeVertices[1] + dy < (GRID_START_Y) || cubeVertices[1] + dy > -GRID_START_Y+GRID_SIZE) {
+            //cout << "block " << id << " off y grid" << endl;
             return false;
         }
-        // TODO: handle block collision?
+        for(auto it = all_blocks.begin(); it != all_blocks.end(); it++) {
+            block_t* block = *it;
+            if(my_blocks.find(block->id) != my_blocks.end() || block->id == 0) {
+                continue;
+            }
+            cout << cubeVertices[0] + dx << endl;
+            cout << block->cubeVertices[0] << endl << endl;
+            if((float)abs((cubeVertices[0] + dx) - block->cubeVertices[0]) < EPSILON &&
+               (float)abs((cubeVertices[1] + dy) - block->cubeVertices[1]) < EPSILON) {
+                //cout << "block " << id << " and " << block->id << " collision" << endl;
+                return false;
+            }
+        }
         return true;
     }
     
@@ -313,20 +328,6 @@ public:
         }
     }
 
-    /*
-    bool operator<(const block_t& rhs) const {
-        //if(IS_CLOSE(this->cubeVertices[0], rhs.cubeVertices[0])) {
-        if((float)abs(this->cubeVertices[0] - rhs.cubeVertices[0]) < EPSILON) {
-            return this->cubeVertices[1] < rhs.cubeVertices[1];
-        }
-        // Always smaller when x-axis coordinate is less.
-        else if(this->cubeVertices[0] < rhs.cubeVertices[0]) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    */
 
 private:
 };

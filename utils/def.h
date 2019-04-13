@@ -8,7 +8,7 @@
 #define EPSILON 1e-9f
 
 // Are two floats within epsilon difference.
-#define IS_CLOSE(x,y) (abs((x)-(y)<EPSILON)
+#define IS_CLOSE(x,y) ((float)abs((x)-(y)) < EPSILON)
 
 // Table z-axis thickness.
 #define TABLE_HEIGHT 0.15f
