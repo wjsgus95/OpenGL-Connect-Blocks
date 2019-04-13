@@ -66,12 +66,12 @@ public:
         //0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1,   0, 1, 1, 1, // v1,v6,v7,v2 (left)
         //0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // v7,v4,v3,v2 (bottom)
         //1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1,   1, 0, 1, 1  // v4,v7,v6,v5 (back)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v0,v2,v3 (front)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v3,v4,v5 (right)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v5,v6,v0 (top)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v0,v6,v7,v2 (left)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // v7,v4,v3,v2 (bottom)
-        1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1  // v4,v7,v6,v5 (back)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v1,v2,v3 (front)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v3,v4,v5 (right)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v5,v6,v1 (top)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v1,v6,v7,v2 (left)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1, // v7,v4,v3,v2 (bottom)
+        1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1  // v4,v7,v6,v5 (back)
     };
     
     // texture coord array
@@ -185,6 +185,12 @@ public:
     }
     
     virtual void translate(float dx, float dy, float dz) {
+        if(cubeVertices[0] + dx < -GRID_START_X || cubeVertices[0] + dx > GRID_START_X+GRID_SIZE) {
+            return;
+        }
+        if(cubeVertices[1] + dy < (GRID_START_Y) || cubeVertices[1] + dy > -GRID_START_Y+GRID_SIZE) {
+            return;
+        }
         for (int i = 0; i < 72; i++) {
             if (i % 3 == 0) cubeVertices[i] += dx;
             else if (i % 3 == 1) cubeVertices[i] += dy;

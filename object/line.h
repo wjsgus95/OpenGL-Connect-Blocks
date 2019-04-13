@@ -67,6 +67,7 @@ public:
         shader->use();
         glBindVertexArray(VAO);
         glDrawArrays(GL_LINES, 0, numVertices*2 - 1);
+        //glDrawArrays(GL_LINES, 0, numVertices);
         glBindVertexArray(0);
     };
 
