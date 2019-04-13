@@ -13,6 +13,13 @@ public:
     // All the blocks on the grid.
     static std::vector<block_t*> all_blocks;
 
+    // Game finished/won flags.
+    static bool game_done;
+    static bool game_won;
+
+    // Number of moves player made.
+    static unsigned num_moves;
+
     line_t lines;
     
     // vertex position array
@@ -95,7 +102,12 @@ public:
         20,21,22,  22,23,20     // v4-v7-v6, v6-v5-v4 (back)
     };
 
+
     unsigned id;
+
+    // Block's grid center coords.
+    float grid_x;
+    float grid_y;
 
     unsigned int VAO;
     unsigned int VBO;
@@ -116,6 +128,9 @@ public:
         scale(s);
         translate(dx, dy, dz);
         initBuffers();
+
+        grid_x = dx;
+        grid_y = dy;
 
         lines.addLine(dx+BLOCK_HALF_EDGE, dy+BLOCK_HALF_EDGE, TABLE_HEIGHT+BLOCK_EDGE,
                        dx+BLOCK_HALF_EDGE, dy+BLOCK_HALF_EDGE, TABLE_HEIGHT);
@@ -201,6 +216,7 @@ public:
         }
 
         this->translate_each_block(dx, dy, dz);
+        num_moves++;
     }
 
     bool is_block_translatable(float dx, float dy) {
@@ -219,8 +235,6 @@ public:
             if(my_blocks.find(block->id) != my_blocks.end() || block->id == 0) {
                 continue;
             }
-            cout << cubeVertices[0] + dx << endl;
-            cout << block->cubeVertices[0] << endl << endl;
             if((float)abs((cubeVertices[0] + dx) - block->cubeVertices[0]) < EPSILON &&
                (float)abs((cubeVertices[1] + dy) - block->cubeVertices[1]) < EPSILON) {
                 //cout << "block " << id << " and " << block->id << " collision" << endl;
@@ -231,6 +245,8 @@ public:
     }
     
     void translate_each_block(float dx, float dy, float dz) {
+        grid_x += dx; grid_y += dy;
+
         // Make sure block is on the grid.
         if(cubeVertices[0] + dx < -GRID_START_X || cubeVertices[0] + dx > GRID_START_X+GRID_SIZE) {
             return;
@@ -277,14 +293,29 @@ public:
 
     // Initialize the game. Place blocks in random locations.
     static void init_random_placement(unsigned m_num_blocks) {
-        for(unsigned i = 0; i < m_num_blocks; i++) {
-            float grid_x = grid_centers[(rand()*3) % grid_centers.size()];
-            float grid_y = grid_centers[(rand()*3) % grid_centers.size()];
+        unsigned num_generated_blocks = 0;
+        srand(time(NULL));
+        while(num_generated_blocks < m_num_blocks) {
+            float grid_x = grid_centers[(rand()) % grid_centers.size()];
+            float grid_y = grid_centers[(rand()) % grid_centers.size()];
+
+            // Check collision on generating blocks.
+            bool is_colliding = false;
+            for(auto it = all_blocks.begin(); it != all_blocks.end(); it++) {
+                block_t* block = *it;
+                if(abs(grid_x - block->grid_x) < EPSILON &&
+                   abs(grid_y - block->grid_y) < EPSILON) {
+                    is_colliding = true;
+                    cout << block->id << endl;
+                    cout << "collision: " << grid_x << " " << grid_y << ", " << block->grid_x << " " << block->grid_y << endl;
+                }
+            }
+            if(is_colliding) { continue; }
 
             block_t* new_block = new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
             new_block->id = all_blocks.size();
             all_blocks.push_back(new_block);
-            //all_blocks.push_back(new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE));
+            num_generated_blocks++;
         }
     }
 
@@ -310,8 +341,8 @@ public:
                     my_blocks.insert(block->id);
                 }
             }
-
         }
+
         for(auto it = all_blocks.begin() + 1; it != all_blocks.end(); it++) {
             block_t* block = *it;
             float x = block->cubeVertices[0];
@@ -326,15 +357,68 @@ public:
                 my_blocks.insert(block->id);
             }
         }
+
+        //TODO: check if I made the goal shape when all the blocks are connected.
+        if(my_blocks.size() == all_blocks.size() - 1) {
+            game_done = true;
+            // Find corner block coords.
+            float min_grid_x = 1e9f, min_grid_y = 1e9f;
+            float max_grid_x = -1e9f, max_grid_y = -1e9f;
+            for(auto it = all_blocks.begin(); it != all_blocks.end(); it++) {
+                block_t* block = *it;
+                if(block->grid_x < min_grid_x) {
+                    //corner_block_id = block->id;
+                    min_grid_x = block->grid_x;
+                }
+                if(block->grid_y < min_grid_y) {
+                    //corner_block_id = block->id;
+                    min_grid_y = block->grid_y;
+                }
+                if(block->grid_x > max_grid_x) {
+                    max_grid_x = block->grid_x;
+                }
+                if(block->grid_y > max_grid_y) {
+                    max_grid_y = block->grid_y;
+                }
+            }
+            if(grid_x > max_grid_x) {
+                max_grid_x = grid_x;
+            }
+            if(grid_y > max_grid_y) {
+                max_grid_y = grid_y;
+            }
+            if(grid_x < min_grid_x) {
+                min_grid_x = grid_x;
+            }
+            if(grid_y < min_grid_y) {
+                min_grid_y = grid_y;
+            }
+
+            // If it's a square.
+            if(abs(max_grid_x - min_grid_x - (2*GRID_SIZE)) < EPSILON &&
+               abs(max_grid_y - min_grid_y - (2*GRID_SIZE)) < EPSILON) {
+                game_won = true;
+                cout << "game won!" << endl;
+            } else {
+                game_won = false;
+                cout << "you lost :(" << endl;
+            }
+            cout << num_moves << " moves in total" << endl;
+        }
     }
 
 
 private:
 };
 
-// Set of blocks you connected.
+// Set of blocks you connected to.
 std::set<int> block_t::my_blocks = std::set<int>();
 // All the blocks on the grid.
 std::vector<block_t*> block_t::all_blocks = std::vector<block_t*>();
+
+bool block_t::game_done = false;
+bool block_t::game_won = false;
+
+unsigned block_t::num_moves = 0;
 
 #endif

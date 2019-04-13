@@ -84,11 +84,8 @@ int main()
     // Table initialization.
     table = new table_t();
     
-    // My block initialization.
-    //my_block = new block_t(GRID_START_X, GRID_START_Y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
-
     // Initialize blocks.
-    block_t::init_random_placement(/*num_blocks*/8);
+    block_t::init_random_placement(/*num_blocks*/9);
     
     // Choose random block as starting block.
     my_block = block_t::get_starting_block();
