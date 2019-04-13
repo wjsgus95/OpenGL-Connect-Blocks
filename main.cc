@@ -225,6 +225,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         //TODO: bind to my block if there's any adjacent blocks.
+        my_block->bind();
     }
 }
 

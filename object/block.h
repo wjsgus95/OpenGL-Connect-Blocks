@@ -9,7 +9,7 @@
 class block_t {
 public:
     // Set of blocks you connected.
-    static std::set<block_t*> my_blocks;
+    static std::set<int> my_blocks;
     // All the blocks on the grid.
     static std::vector<block_t*> all_blocks;
 
@@ -95,6 +95,8 @@ public:
         20,21,22,  22,23,20     // v4-v7-v6, v6-v5-v4 (back)
     };
 
+    unsigned id;
+
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
@@ -168,9 +170,6 @@ public:
     };
     
     void draw(Shader *block_shader, Shader* line_shader) {
-        //std::cout << std::hex <<  all_blocks[0] << endl;
-        //std::cout << std::hex <<  this << endl;
-        
         for(auto it = all_blocks.begin(); it != all_blocks.end(); it++) {
             (*it)->draw_each_block(block_shader, line_shader);
         }
@@ -183,11 +182,45 @@ public:
         glBindVertexArray(0);
         lines.draw(line_shader);
     }
+
+    void translate(float dx, float dy, float dz) {
+        bool translatable = true;
+        for(auto id: my_blocks) {
+            block_t* block = all_blocks[id];
+            translatable = block->is_block_translatable(dx, dy) && translatable;
+        }
+        if(!translatable) { 
+            cerr << "block can't move!" << endl;
+            return;
+        }
+
+        for(auto id: my_blocks) {
+            block_t* block = all_blocks[id];
+            block->translate_each_block(dx, dy, dz);
+        }
+
+        this->translate_each_block(dx, dy, dz);
+    }
+
+    bool is_block_translatable(float dx, float dy) {
+        // Make sure block is on the grid.
+        if(cubeVertices[0] + dx < -GRID_START_X || cubeVertices[0] + dx > GRID_START_X+GRID_SIZE) {
+            return false;
+        }
+        // Make sure block is on the grid.
+        if(cubeVertices[1] + dy < (GRID_START_Y) || cubeVertices[1] + dy > -GRID_START_Y+GRID_SIZE) {
+            return false;
+        }
+        // TODO: handle block collision?
+        return true;
+    }
     
-    virtual void translate(float dx, float dy, float dz) {
+    void translate_each_block(float dx, float dy, float dz) {
+        // Make sure block is on the grid.
         if(cubeVertices[0] + dx < -GRID_START_X || cubeVertices[0] + dx > GRID_START_X+GRID_SIZE) {
             return;
         }
+        // Make sure block is on the grid.
         if(cubeVertices[1] + dy < (GRID_START_Y) || cubeVertices[1] + dy > -GRID_START_Y+GRID_SIZE) {
             return;
         }
@@ -233,7 +266,10 @@ public:
             float grid_x = grid_centers[(rand()*3) % grid_centers.size()];
             float grid_y = grid_centers[(rand()*3) % grid_centers.size()];
 
-            all_blocks.push_back(new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE));
+            block_t* new_block = new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
+            new_block->id = all_blocks.size();
+            all_blocks.push_back(new_block);
+            //all_blocks.push_back(new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE));
         }
     }
 
@@ -242,25 +278,61 @@ public:
         return all_blocks[0];
     }
 
+    void bind() { 
+        for(auto id: my_blocks) {
+            block_t* my_block = all_blocks[id];
+            for(auto it = all_blocks.begin() + 1; it != all_blocks.end(); it++) {
+                block_t* block = *it;
+                float x = block->cubeVertices[0];
+                float y = block->cubeVertices[1];
+
+                if((x-GRID_SIZE == my_block->cubeVertices[0] && y == my_block->cubeVertices[1]) ||
+                        (x+GRID_SIZE == my_block->cubeVertices[0] && y == my_block->cubeVertices[1])) {
+                    my_blocks.insert(block->id);
+                }
+                else if ((y-GRID_SIZE == my_block->cubeVertices[1] && x == my_block->cubeVertices[0]) ||
+                        (y+GRID_SIZE == my_block->cubeVertices[1] && x == my_block->cubeVertices[0])) {
+                    my_blocks.insert(block->id);
+                }
+            }
+
+        }
+        for(auto it = all_blocks.begin() + 1; it != all_blocks.end(); it++) {
+            block_t* block = *it;
+            float x = block->cubeVertices[0];
+            float y = block->cubeVertices[1];
+
+            if((x-GRID_SIZE == cubeVertices[0] && y == cubeVertices[1]) ||
+               (x+GRID_SIZE == cubeVertices[0] && y == cubeVertices[1])) {
+                my_blocks.insert(block->id);
+            }
+            else if ((y-GRID_SIZE == cubeVertices[1] && x == cubeVertices[0]) ||
+               (y+GRID_SIZE == cubeVertices[1] && x == cubeVertices[0])) {
+                my_blocks.insert(block->id);
+            }
+        }
+    }
+
     /*
     bool operator<(const block_t& rhs) const {
-        if(IS_CLOSE(cubeVertices[0], rhs.cubeVertices[0]) {
-            return cubeVertices[1] < rhs.cubeVertices[1];
+        //if(IS_CLOSE(this->cubeVertices[0], rhs.cubeVertices[0])) {
+        if((float)abs(this->cubeVertices[0] - rhs.cubeVertices[0]) < EPSILON) {
+            return this->cubeVertices[1] < rhs.cubeVertices[1];
         }
         // Always smaller when x-axis coordinate is less.
-        else if(cubeVertices[0] < rhs.cubeVetices[0]) {
+        else if(this->cubeVertices[0] < rhs.cubeVertices[0]) {
             return true;
         } else {
             return false;
         }
-    };
+    }
     */
 
 private:
 };
 
 // Set of blocks you connected.
-std::set<block_t*> block_t::my_blocks = std::set<block_t*>();
+std::set<int> block_t::my_blocks = std::set<int>();
 // All the blocks on the grid.
 std::vector<block_t*> block_t::all_blocks = std::vector<block_t*>();
 
