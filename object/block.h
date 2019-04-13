@@ -12,6 +12,8 @@ public:
     static std::set<int> my_blocks;
     // All the blocks on the grid.
     static std::vector<block_t*> all_blocks;
+    // Initial set-up.
+    static std::vector<block_t*> initial_all_blocks;
 
     // Game finished/won flags.
     static bool game_done;
@@ -317,6 +319,8 @@ public:
             all_blocks.push_back(new_block);
             num_generated_blocks++;
         }
+
+        initial_all_blocks = std::vector<block_t*>(all_blocks);
     }
 
     // Get starting block.
@@ -324,7 +328,7 @@ public:
         return all_blocks[0];
     }
 
-    void bind() { 
+    bool bind() { 
         for(auto id: my_blocks) {
             block_t* my_block = all_blocks[id];
             for(auto it = all_blocks.begin() + 1; it != all_blocks.end(); it++) {
@@ -404,7 +408,17 @@ public:
                 cout << "you lost :(" << endl;
             }
             cout << num_moves << " moves in total" << endl;
+            return true;
         }
+        else {
+            return false;
+        }
+    }
+
+    static block_t* restart_game() {
+        all_blocks = initial_all_blocks;
+        my_blocks = std::set<int>();
+        return all_blocks[0];
     }
 
 
@@ -415,6 +429,8 @@ private:
 std::set<int> block_t::my_blocks = std::set<int>();
 // All the blocks on the grid.
 std::vector<block_t*> block_t::all_blocks = std::vector<block_t*>();
+// Initial block set-up.
+std::vector<block_t*> block_t::initial_all_blocks = std::vector<block_t*>();
 
 bool block_t::game_done = false;
 bool block_t::game_won = false;

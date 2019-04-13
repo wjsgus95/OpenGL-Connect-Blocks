@@ -207,6 +207,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         camRotor.init(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
+        if(block_t::game_done) {
+            my_block = block_t::restart_game();
+        }
     }
     else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         my_block->move_right();
@@ -221,7 +224,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         my_block->move_down();
     }
     else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        //TODO: bind to my block if there's any adjacent blocks.
         my_block->bind();
     }
 }
