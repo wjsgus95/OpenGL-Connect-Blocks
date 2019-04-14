@@ -3,8 +3,11 @@
 
 #include <set>
 #include <vector>
+#include <cstring>
 
 #include "line.h"
+
+float initial_coords[9][72];
 
 class block_t {
 public:
@@ -208,7 +211,7 @@ public:
         }
         translatable = this->is_block_translatable(dx, dy) && translatable;
         if(!translatable) { 
-            cerr << "block can't move!" << endl;
+            //cerr << "block can't move!" << endl;
             return;
         }
 
@@ -308,8 +311,8 @@ public:
                 if(abs(grid_x - block->grid_x) < EPSILON &&
                    abs(grid_y - block->grid_y) < EPSILON) {
                     is_colliding = true;
-                    cout << block->id << endl;
-                    cout << "collision: " << grid_x << " " << grid_y << ", " << block->grid_x << " " << block->grid_y << endl;
+                    //cout << block->id << endl;
+                    //cout << "collision: " << grid_x << " " << grid_y << ", " << block->grid_x << " " << block->grid_y << endl;
                 }
             }
             if(is_colliding) { continue; }
@@ -317,6 +320,8 @@ public:
             block_t* new_block = new block_t(grid_x, grid_y, TABLE_HEIGHT + BLOCK_HALF_EDGE);
             new_block->id = all_blocks.size();
             all_blocks.push_back(new_block);
+
+            memcpy(&initial_coords[num_generated_blocks][0], new_block->cubeVertices, sizeof(float) * 72);
             num_generated_blocks++;
         }
 

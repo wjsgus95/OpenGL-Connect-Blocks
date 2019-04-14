@@ -41,8 +41,8 @@ GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
-unsigned int SCR_WIDTH = 1024;
-unsigned int SCR_HEIGHT = 768;
+unsigned int SCR_WIDTH = 1920;
+unsigned int SCR_HEIGHT = 1080;
 table_t *table;
 block_t* my_block;
 glm::mat4 projection, view, model;
@@ -60,6 +60,8 @@ static unsigned int texture; // Array of texture ids.
 
 int main()
 {
+    cout << "ConnectBlocks: Make a square!" << endl;
+
     mainWindow = glAllInit();
     
     // shader loading and compile (by calling the constructor)
