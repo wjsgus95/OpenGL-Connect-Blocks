@@ -41,8 +41,8 @@ GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
-unsigned int SCR_WIDTH = 1920;
-unsigned int SCR_HEIGHT = 1080;
+unsigned int SCR_WIDTH = 1024;
+unsigned int SCR_HEIGHT = 768;
 table_t *table;
 block_t* my_block;
 glm::mat4 projection, view, model;
@@ -57,10 +57,15 @@ static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
 // for texture
 static unsigned int texture; // Array of texture ids.
 
+void print_help() {
+    cout << "ConnectBlocks: Make a square!" << endl;
+    cout << "Move: ← → ↑ ↓\nBind: Space" << endl;
+}
+
 
 int main()
 {
-    cout << "ConnectBlocks: Make a square!" << endl;
+    print_help();
 
     mainWindow = glAllInit();
     

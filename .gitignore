@@ -4,3 +4,6 @@ ConnectBlocks
 # Swap files(VIM)
 *.swp
 
+# Exuberant Ctags
+tags
+

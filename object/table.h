@@ -17,20 +17,13 @@
 #ifndef __TABLE_H__
 #define __TABLE_H__
 
+#include "line.h"
 #include "shader.h"
 
 class table_t {
 public:
     
     // vertex position array
-    //GLfloat tableVertices[72]  = { // initialized as size = 1 for each dimension, 72 elements
-    //    .5f, .5f, .5f,  -.5f, .5f, .5f,  -.5f,-.5f, .5f,  .5f,-.5f, .5f, // v0,v1,v2,v3 (front)
-    //    .5f, .5f, .5f,   .5f,-.5f, .5f,   .5f,-.5f,-.5f,  .5f, .5f,-.5f, // v0,v3,v4,v5 (right)
-    //    .5f, .5f, .5f,   .5f, .5f,-.5f,  -.5f, .5f,-.5f, -.5f, .5f, .5f, // v0,v5,v6,v1 (top)
-    //    -.5f, .5f, .5f,  -.5f, .5f,-.5f,  -.5f,-.5f,-.5f, -.5f,-.5f, .5f, // v1,v6,v7,v2 (left)
-    //    -.5f,-.5f,-.5f,   .5f,-.5f,-.5f,   .5f,-.5f, .5f, -.5f,-.5f, .5f, // v7,v4,v3,v2 (bottom)
-    //    .5f,-.5f,-.5f,  -.5f,-.5f,-.5f,  -.5f, .5f,-.5f,  .5f, .5f,-.5f  // v4,v7,v6,v5 (back)
-    //};
     GLfloat tableVertices[72]  = { // initialized as size = 5 for each dimension, 72 elements
         2.5f, 2.5f, .15f,  -2.5f, 2.5f, .15f,  -2.5f,-2.5f, .15f,  2.5f,-2.5f, .15f, // v0,v1,v2,v3 (front)
         2.5f, 2.5f, .15f,   2.5f,-2.5f, .15f,   2.5f,-2.5f,-.15f,  2.5f, 2.5f,-.15f, // v0,v3,v4,v5 (right)
@@ -81,6 +74,8 @@ public:
         20,21,22,  22,23,20     // v4-v7-v6, v6-v5-v4 (back)
     };
 
+    line_t lines;
+
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
@@ -95,6 +90,12 @@ public:
     };
     
     table_t(float dx, float dy, float dz, float s) {
+        for(float i = -GRID_START_X; i <= GRID_START_X; i += GRID_SIZE) {
+            lines.addLine(i, -GRID_START_Y, TABLE_HEIGHT + BLOCK_EDGE,
+                          i, +GRID_START_Y, TABLE_HEIGHT + BLOCK_EDGE);
+            lines.addLine(+GRID_START_X, i, TABLE_HEIGHT + BLOCK_EDGE,
+                          -GRID_START_X, i TABLE_HEIGHT + BLOCK_EDGE);
+        }
         scale(s);
         translate(dx, dy, dz);
         initBuffers();
