@@ -90,12 +90,6 @@ public:
     };
     
     table_t(float dx, float dy, float dz, float s) {
-        for(float i = -GRID_START_X; i <= GRID_START_X; i += GRID_SIZE) {
-            lines.addLine(i, -GRID_START_Y, TABLE_HEIGHT + BLOCK_EDGE,
-                          i, +GRID_START_Y, TABLE_HEIGHT + BLOCK_EDGE);
-            lines.addLine(+GRID_START_X, i, TABLE_HEIGHT + BLOCK_EDGE,
-                          -GRID_START_X, i TABLE_HEIGHT + BLOCK_EDGE);
-        }
         scale(s);
         translate(dx, dy, dz);
         initBuffers();
