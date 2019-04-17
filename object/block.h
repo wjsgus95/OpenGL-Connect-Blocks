@@ -330,7 +330,10 @@ public:
 
     // Get starting block.
     static block_t* get_starting_block() {
-        return all_blocks[0];
+        // If no block, return.
+        if(all_blocks.size() > 0) {
+            return all_blocks[0];
+        }
     }
 
     bool bind() { 
