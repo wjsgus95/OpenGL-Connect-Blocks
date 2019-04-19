@@ -20,6 +20,7 @@ public:
     const int MAX_LINE = 100;
     
     line_t() {
+        memset(vertices, 0, sizeof(vertices));
         numLines = numVertices = 0;
         colorIndex = 0;
         createBuffers();
@@ -116,7 +117,7 @@ private:
         
         // reserve space for position attributes
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), 0, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), 0, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         // reserve space for color attributes
