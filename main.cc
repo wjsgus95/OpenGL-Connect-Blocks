@@ -24,6 +24,8 @@
 #include "table.h"
 #include "rotor.h"
 
+#include "Model.h"
+
 
 using namespace std;
 
@@ -38,9 +40,14 @@ void loadTexture();
 
 // Global variables
 GLFWwindow *mainWindow = NULL;
+
+Shader *shader = NULL;
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
+
+Model *my_model;
+
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 table_t *table;
@@ -68,6 +75,10 @@ int main()
     print_help();
 
     mainWindow = glAllInit();
+
+    shader = new Shader("shader/modelLoading.vs", "shader/modelLoading.fs"); 
+    my_model = new Model((GLchar *)"object/chess_board/10586_Chess Board_v2_Iterations-2.obj");
+
     
     // shader loading and compile (by calling the constructor)
     globalShader = new Shader("shader/global.vs", "shader/global.fs");
@@ -77,6 +88,10 @@ int main()
     // projection matrix
     projection = glm::perspective(glm::radians(45.0f),
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    
+    shader->use();
+    shader->setMat4("projection", projection);
+
     globalShader->use();
     globalShader->setMat4("projection", projection);
 
@@ -158,10 +173,12 @@ void render() {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+    view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 50.0f, 0.0f, cos(glm::radians(60.0f)) * 50.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                        glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
     view = view * camRotor.createRotationMatrix();
     
+    shader->use();
+    shader->setMat4("view", view);
     globalShader->use();
     globalShader->setMat4("view", view);
     tableShader->use();
@@ -169,6 +186,12 @@ void render() {
     lineShader->use();
     lineShader->setMat4("view", view);
     
+    shader->use();
+    model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(0.0f, 0.0f, -10.0f));
+    shader->setMat4("model", model);
+    my_model->Draw(shader);
+
     // Blocks
     globalShader->use();
     model = glm::mat4(1.0f);

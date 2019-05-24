@@ -334,6 +334,8 @@ public:
         if(all_blocks.size() > 0) {
             return all_blocks[0];
         }
+        cerr << "Error: No blocks created but requested the starting block." << endl;
+        exit(1);
     }
 
     bool bind() { 
