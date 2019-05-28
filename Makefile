@@ -1,6 +1,3 @@
-#TODO: grading environment not UNIX.
-# 	   Makefile only for development.
-
 EXE = ConnectBlocks
 SRC = main.cc
 
@@ -10,9 +7,9 @@ SRC = main.cc
 CC = g++
 
 # Compiler Options
-CFLAGS = -g -O3 -std=c++11 -I utils -I object -Wall
+CFLAGS = -g -O3 -std=c++11 -I utils -I object -I /usr/include/freetype2 -Wall
 # Linker Options
-LDFLAG = -lGL -lm -lGLU -lGLEW -lglfw
+LDFLAG = -lGL -lm -lGLU -lGLEW -lglfw -lassimp -lfreetype
 
 default: $(EXE)
 

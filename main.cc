@@ -24,6 +24,9 @@
 #include "table.h"
 #include "rotor.h"
 
+#include "Model.h"
+#include "text.h"
+
 
 using namespace std;
 
@@ -38,13 +41,20 @@ void loadTexture();
 
 // Global variables
 GLFWwindow *mainWindow = NULL;
+
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
+Shader *cylinderShader = NULL;
+Shader *textShader = NULL;
+
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 table_t *table;
 block_t* my_block;
+Model* my_cylinder;
+Text* text;
+
 glm::mat4 projection, view, model;
 vector<block_t*> blocks;
 
@@ -56,6 +66,7 @@ static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
 
 // for texture
 static unsigned int texture; // Array of texture ids.
+static unsigned int texture2; // Array of texture ids.
 
 void print_help() {
     cout << "ConnectBlocks: Make a square!" << endl;
@@ -73,6 +84,9 @@ int main()
     globalShader = new Shader("shader/global.vs", "shader/global.fs");
     tableShader = new Shader("shader/table.vs", "shader/table.fs");
     lineShader = new Shader("shader/lines.vs", "shader/lines.fs");
+    cylinderShader = new Shader("shader/modelLoading.vs", "shader/modelLoading.fs");
+    textShader = new Shader("shader/text.vs", "shader/text.fs");
+    text = new Text("shader/fonts/arial.ttf", textShader, SCR_WIDTH, SCR_HEIGHT);
     
     // projection matrix
     projection = glm::perspective(glm::radians(45.0f),
@@ -86,10 +100,18 @@ int main()
     lineShader->use();
     lineShader->setMat4("projection", projection);
 
+    cylinderShader->use();
+    cylinderShader->setMat4("projection", projection);
+
+    textShader->setMat4("projection", projection);
+
     loadTexture();
     
     // Table initialization.
     table = new table_t();
+
+    my_cylinder = new Model("object/cylinder/cylinder.obj");
+
     
     // Initialize blocks.
     block_t::init_random_placement(/*num_blocks*/9);
@@ -141,6 +163,9 @@ GLFWwindow *glAllInit()
     // OpenGL states
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // Allow modern extension features
     glewExperimental = GL_TRUE;
@@ -160,7 +185,9 @@ void render() {
     
     view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                        glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
-    view = view * camRotor.createRotationMatrix();
+    glm::mat4 rot_matrix = camRotor.createRotationMatrix();
+    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = view * rot_matrix;
     
     globalShader->use();
     globalShader->setMat4("view", view);
@@ -168,6 +195,10 @@ void render() {
     tableShader->setMat4("view", view);
     lineShader->use();
     lineShader->setMat4("view", view);
+    cylinderShader->use();
+    cylinderShader->setMat4("view", view);
+    textShader->use();
+    textShader->setMat4("view", view);
     
     // Blocks
     globalShader->use();
@@ -179,21 +210,33 @@ void render() {
     model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     lineShader->setMat4("model", model);
-    my_block->draw(globalShader, lineShader);
-    
+    //my_block->draw(globalShader, lineShader);
+
+    //model = glm::mat4(1.0f);
+    text->RenderText("Test Text", 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+    text->RenderText("This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+
+    // Clock
+    cylinderShader->use();
+    model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.0f, -0.0f, -6.75f));
+    glm::vec3 scale = glm::vec3(0.5f, 0.500f, 10.0f);
+    model = glm::scale(model, scale);
+    //model = glm::translate(glm::vec3(3.0f, -3.0f, 0.0f));
+    //model = model * rot_matrix;
+    //model = model * camRotor.createRotationMatrix();
+    cylinderShader->setMat4("model", model);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    my_cylinder->Draw(cylinderShader);
+
     // Table
     tableShader->use();
     model = glm::mat4(1.0f);
     tableShader->setMat4("model", model);
     glBindTexture(GL_TEXTURE_2D, texture);
-    table->draw(tableShader);
+    //table->draw(tableShader);
 
-    // right cube
-    //model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-    //globalShader->setMat4("model", model);
-    //cube->draw(globalShader);
-    
     glfwSwapBuffers(mainWindow);
 }
 
@@ -264,7 +307,7 @@ void loadTexture() {
 
     // Load the image from bmp file
     BitMapFile *image;
-    char texFileName[] = "img/grid.bmp";
+    string texFileName = "img/grid.bmp";
     if (!(image = getbmp(texFileName))) {
         cout << texFileName << " open error ... exit" << endl;
         exit(1);
@@ -278,6 +321,26 @@ void loadTexture() {
             GL_RGBA, GL_UNSIGNED_BYTE, image->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    texFileName = "object/cylinder/stars.bmp";
+    if (!(image = getbmp(texFileName))) {
+        cout << texFileName << " open error ... exit" << endl;
+        exit(1);
+    }
+    else {
+        cout << texFileName << " loaded. size: " << image->sizeX << " x " << image->sizeY << endl;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->sizeX, image->sizeY, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, image->data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 
