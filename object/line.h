@@ -75,7 +75,7 @@ public:
     };
 
     void translate(float dx, float dy, float dz) {
-        for(unsigned k = 0; k < numVertices; k++) {
+        for(int k = 0; k < numVertices; k++) {
             vertices[k*6] += dx;
             vertices[k*6+3] += dx;
             vertices[k*6+1] += dy;
