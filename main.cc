@@ -24,6 +24,9 @@
 #include "table.h"
 #include "rotor.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 
 using namespace std;
 
@@ -34,7 +37,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action , int mo
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow *window, double x, double y);
 void render();
-void loadTexture();
+void loadTableTexture();
+unsigned int loadTexture(char*);
+
 
 // Global variables
 GLFWwindow *mainWindow = NULL;
@@ -47,6 +52,7 @@ table_t *table;
 block_t* my_block;
 glm::mat4 projection, view, model;
 vector<block_t*> blocks;
+glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f);
 
 // for arcball
 float arcballSpeed = 0.2f;
@@ -55,7 +61,7 @@ static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
 //bool arcballCamRot = true;
 
 // for texture
-static unsigned int texture; // Array of texture ids.
+static unsigned int table_texture, cube_texture, cube_specular_texture; // Array of texture ids.
 
 void print_help() {
     cout << "ConnectBlocks: Make a square!" << endl;
@@ -70,7 +76,10 @@ int main()
     mainWindow = glAllInit();
     
     // shader loading and compile (by calling the constructor)
-    globalShader = new Shader("shader/global.vs", "shader/global.fs");
+    //globalShader = new Shader("shader/global.vs", "shader/global.fs");
+    //tableShader = new Shader("shader/table.vs", "shader/table.fs");
+
+    globalShader = new Shader("shader/lighting.vs", "shader/lighting.fs");
     tableShader = new Shader("shader/table.vs", "shader/table.fs");
     lineShader = new Shader("shader/lines.vs", "shader/lines.fs");
     
@@ -79,6 +88,18 @@ int main()
                                   (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     globalShader->use();
     globalShader->setMat4("projection", projection);
+    globalShader->setInt("material.diffuse", 0);
+    globalShader->setInt("material.specular", 1);
+    globalShader->setFloat("material.shininess", 32);
+
+    globalShader->setVec3("viewPos", cameraPos);
+
+    // directional light
+    globalShader->setVec3("dirLight.direction", -0.0f, -0.0f, -1.0f);
+    globalShader->setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+    globalShader->setVec3("dirLight.diffuse", 0.6f, 0.6f, 0.6f);
+    globalShader->setVec3("dirLight.specular", 0.8f, 0.8f, 0.8f);
+
 
     tableShader->use();
     tableShader->setMat4("projection", projection);
@@ -86,7 +107,10 @@ int main()
     lineShader->use();
     lineShader->setMat4("projection", projection);
 
-    loadTexture();
+    // load texture
+    loadTableTexture();
+    cube_texture = loadTexture("img/container2.bmp");
+    cube_specular_texture = loadTexture("img/container2_specular.bmp");
     
     // Table initialization.
     table = new table_t();
@@ -179,21 +203,20 @@ void render() {
     model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     lineShader->setMat4("model", model);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cube_texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, cube_specular_texture);
     my_block->draw(globalShader, lineShader);
     
     // Table
     tableShader->use();
     model = glm::mat4(1.0f);
     tableShader->setMat4("model", model);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    table->draw(tableShader);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, table_texture);
+    table->draw(globalShader);
 
-    // right cube
-    //model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-    //globalShader->setMat4("model", model);
-    //cube->draw(globalShader);
-    
     glfwSwapBuffers(mainWindow);
 }
 
@@ -243,24 +266,20 @@ void cursor_position_callback(GLFWwindow *window, double x, double y) {
     camRotor.cursorCallback( window, x, y );
 }
 
-void loadTexture() {
+void loadTableTexture() {
 
     // Create texture ids.
-    glGenTextures(1, &texture);
+    glGenTextures(1, &table_texture);
 
     // All upcomming GL_TEXTURE_2D operations now on "texture" object
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, table_texture);
 
     // Set texture parameters for wrapping.
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
     // Set texture parameters for filtering.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Load the image from bmp file
     BitMapFile *image;
@@ -278,6 +297,44 @@ void loadTexture() {
             GL_RGBA, GL_UNSIGNED_BYTE, image->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+}
+
+unsigned int loadTexture(char *texFileName) {
+    unsigned int texture;
+
+    // Create texture ids.
+    glGenTextures(1, &texture);
+
+    // All upcomming GL_TEXTURE_2D operations now on "texture" object
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Set texture parameters for wrapping.
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // Set texture parameters for filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);   // vertical flip the texture
+    unsigned char *image = stbi_load(texFileName, &width, &height, &nrChannels, 0);
+    if (!image) {
+        printf("texture %s loading error ... \n", texFileName);
+    }
+    else printf("texture %s loaded\n", texFileName);
+
+    GLenum format;
+    if (nrChannels == 1) format = GL_RED;
+    else if (nrChannels == 3) format = GL_RGB;
+    else if (nrChannels == 4) format = GL_RGBA;
+
+    glBindTexture( GL_TEXTURE_2D, texture );
+    glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image );
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    return texture;
 }
 
 
