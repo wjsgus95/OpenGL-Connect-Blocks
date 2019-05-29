@@ -19,6 +19,7 @@
 #include <shader.h>
 #include <getbmp.h>
 #include <keyframe.h>
+#include <text.h>
 
 #include "def.h"
 #include "block.h"
@@ -52,6 +53,7 @@ GLFWwindow *mainWindow = NULL;
 Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
+Shader *textShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 Link* root;
@@ -62,6 +64,7 @@ vector<block_t*> blocks;
 glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f);
 KeyFraming zTKF(5);
 float zTrans;
+Text* text;
 
 enum spotlight_t { on, off } spotlight = on;
 
@@ -125,6 +128,10 @@ int main()
     table = new table_t();
     initKeyframes();
     initLinks();
+
+    // Text initialization.
+    textShader = new Shader("shader/text.vs", "shader/text.fs");
+    text = new Text("shader/fonts/arial.ttf", textShader, SCR_WIDTH, SCR_HEIGHT);
     
     // Initialize blocks.
     block_t::init_random_placement(/*num_blocks*/9);
@@ -149,6 +156,7 @@ int main()
     // render loop
     // -----------
     while (!glfwWindowShouldClose(mainWindow)) {
+        block_t::num_moves = 0;
         render();
         glfwPollEvents();
     }
@@ -199,6 +207,10 @@ GLFWwindow *glAllInit()
         glfwTerminate();
         exit(-1);
     }
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     return window;
 }
@@ -210,6 +222,12 @@ void render() {
     view = glm::lookAt(glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                        glm::vec3(-cos(glm::radians(30.0f)), 0.0f, sin(glm::radians(30.0f))));
     view = view * camRotor.createRotationMatrix();
+
+    // Stencil Buffer Testing
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glStencilMask(0xFF);
     
     globalShader->use();
     globalShader->setMat4("view", view);
@@ -253,6 +271,9 @@ void render() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, table_texture);
     drawLinks(root, (float)glfwGetTime()/5, model, globalShader);
+    
+    // Text
+    text->RenderText("Moves: " + to_string(block_t::num_moves), 25.0f, SCR_HEIGHT - 75.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
 
     glfwSwapBuffers(mainWindow);
 }

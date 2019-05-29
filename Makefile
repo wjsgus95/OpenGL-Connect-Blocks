@@ -7,7 +7,7 @@ SRC = main.cc
 CC = g++
 
 # Compiler Options
-CFLAGS = -g -O0 -std=c++11 -I utils -I object -Wall
+CFLAGS = -g -O0 -std=c++11 -I utils -I object -Wall -I /usr/include/freetype2
 # Linker Options
 LDFLAG = -lGL -lm -lGLU -lGLEW -lglfw -lassimp -lfreetype
 
