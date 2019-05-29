@@ -18,6 +18,7 @@
 
 #include <shader.h>
 #include <getbmp.h>
+#include <keyframe.h>
 
 #include "def.h"
 #include "block.h"
@@ -41,6 +42,8 @@ void render();
 void loadTableTexture();
 unsigned int loadTexture(char*);
 void initLinks();
+void updateAnimData();
+void initKeyframes();
 void drawLinks(Link *root, float t, glm::mat4 cmodel, Shader *shader);
 
 
@@ -57,6 +60,8 @@ block_t* my_block;
 glm::mat4 projection, view, model;
 vector<block_t*> blocks;
 glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f);
+KeyFraming zTKF(3);
+float zTrans;
 
 // for arcball
 float arcballSpeed = 0.2f;
@@ -113,6 +118,7 @@ int main()
     
     // Table initialization.
     table = new table_t();
+    initKeyframes();
     initLinks();
     
     // Initialize blocks.
@@ -195,12 +201,14 @@ void render() {
     
     // Blocks
     globalShader->use();
+    updateAnimData();
     model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, zTrans));
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
 
     lineShader->use();
-    model = glm::mat4(1.0f);
+    //model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     lineShader->setMat4("model", model);
     glActiveTexture(GL_TEXTURE0);
@@ -230,6 +238,22 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     SCR_WIDTH = width;
     SCR_HEIGHT = height; 
+}
+
+void updateAnimData() {
+    float timeT = (float)glfwGetTime();
+    if (timeT > 7.0f) {
+        return;
+    }
+    zTrans = zTKF.getValLinear(timeT);
+}
+
+void initKeyframes() {
+
+    // z-translation keyframes
+    zTKF.setKey(0, 0, 10.0);
+    zTKF.setKey(1, 5.0, 10.0);
+    zTKF.setKey(2, 7.0, 0.0);
 }
 
 void initLinks()
