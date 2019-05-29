@@ -23,6 +23,7 @@
 #include "block.h"
 #include "table.h"
 #include "rotor.h"
+#include "link.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -39,6 +40,8 @@ void cursor_position_callback(GLFWwindow *window, double x, double y);
 void render();
 void loadTableTexture();
 unsigned int loadTexture(char*);
+void initLinks();
+void drawLinks(Link *root, float t, glm::mat4 cmodel, Shader *shader);
 
 
 // Global variables
@@ -48,6 +51,7 @@ Shader *tableShader = NULL;
 Shader *lineShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
+Link* root;
 table_t *table;
 block_t* my_block;
 glm::mat4 projection, view, model;
@@ -57,8 +61,6 @@ glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::
 // for arcball
 float arcballSpeed = 0.2f;
 static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
-//static rotor_t modelRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true);
-//bool arcballCamRot = true;
 
 // for texture
 static unsigned int table_texture, cube_texture, cube_specular_texture; // Array of texture ids.
@@ -76,9 +78,6 @@ int main()
     mainWindow = glAllInit();
     
     // shader loading and compile (by calling the constructor)
-    //globalShader = new Shader("shader/global.vs", "shader/global.fs");
-    //tableShader = new Shader("shader/table.vs", "shader/table.fs");
-
     globalShader = new Shader("shader/lighting.vs", "shader/lighting.fs");
     tableShader = new Shader("shader/table.vs", "shader/table.fs");
     lineShader = new Shader("shader/lines.vs", "shader/lines.fs");
@@ -114,6 +113,7 @@ int main()
     
     // Table initialization.
     table = new table_t();
+    initLinks();
     
     // Initialize blocks.
     block_t::init_random_placement(/*num_blocks*/9);
@@ -215,7 +215,8 @@ void render() {
     tableShader->setMat4("model", model);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, table_texture);
-    table->draw(globalShader);
+    //table->draw(globalShader);
+    drawLinks(root, (float)glfwGetTime()/5, model, globalShader);
 
     glfwSwapBuffers(mainWindow);
 }
@@ -229,6 +230,79 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     SCR_WIDTH = width;
     SCR_HEIGHT = height; 
+}
+
+void initLinks()
+{
+    //Link(string name, glm::vec3 color, bool isRoot, int nChild,
+    //     glm::vec3 size,
+    //     glm::vec3 offset,
+    //     glm::vec3 trans1,
+    //     glm::vec3 trans2,
+    //     glm::vec3 rot1,       //angles in degree
+    //     glm::vec3 rot2)       //angles in degree
+    
+    // root link: yellow
+    root = new Link("ROOT", glm::vec3(1.0, 1.0, 1.0), true, 2,
+                    glm::vec3(0.1, 0.1, 0.1),   // size
+                    glm::vec3(0.0, -2.5, 0.0),   // offset
+                    glm::vec3(0.0, 0.0, 0.0),   // trans1 w.r.t. origin (because root)
+                    glm::vec3(0.0, 0.0, 0.0),   // trans2 w.r.t. origin (because root)
+                    glm::vec3(0.0, 0.0, 0.0),   // no rotation
+                    glm::vec3(0.0, 0.0, 0.0));  // no rotation
+    
+    // left upper arm: red
+    root->child[0] = new Link("LEFT_HALF", glm::vec3(1.0, 1.0, 1.0), false, 0,
+                              glm::vec3(2.5, 5.0, 0.3),  // size
+                              glm::vec3(-1.25, 0.0, 0.0),  // offset
+                              glm::vec3(0.0, 0.0, 0.0),  // trans1
+                              glm::vec3(0.0, 0.0, 0.0),  // trans2
+                              glm::vec3(0.0, 90.0, 0.0),  // rotation about parent
+                              glm::vec3(0.0, 0.0, 0.0));
+    
+    // right upper arm: green
+    root->child[1] = new Link("RIGHT_HALF", glm::vec3(1.0, 1.0, 1.0), false, 0,
+                              glm::vec3(2.5, 5.0, 0.3),
+                              glm::vec3(+1.25, 0.0, 0.0),
+                              glm::vec3(0.0, 0.0, 0.0),  // trans1
+                              glm::vec3(0.0, 0.0, 0.0),  // trans2
+                              glm::vec3(0.0, -90.0, 0.0),  // rotation about parent
+                              glm::vec3(0.0, 0.0, 0.0));
+}
+
+void drawLinks(Link *clink, float t, glm::mat4 cmodel, Shader *shader)
+{
+
+    if (t > 1.0) t = 1.0f;
+
+    glm::mat4 thisMat = glm::mat4(1.0f);
+
+    // accumulate the parent's transformation
+    thisMat = thisMat * cmodel;
+
+    // if root, interpolates the translation
+    glm::vec3 ctrans = glm::mix(clink->trans1, clink->trans2, t);
+    thisMat = glm::translate(thisMat, ctrans);
+
+    // interpolates the rotation
+    //glm::quat q = glm::slerp(clink->q1, clink->q2, t);
+    glm::vec3 euler = glm::mix(clink->rot1, clink->rot2, t);
+    glm::quat q = glm::quat(euler);
+
+    glm::mat4 crot = q.operator glm::mat4x4();
+
+    thisMat = thisMat * crot;
+
+    // render the link
+    shader->use();
+    shader->setMat4("model", thisMat);
+    clink->draw(shader);
+
+    // recursively call the drawLinks for the children
+    for (int i = 0; i < clink->nChild; i++) {
+        drawLinks(clink->child[i], t, thisMat, shader);
+    }
+
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -275,15 +349,16 @@ void loadTableTexture() {
     glBindTexture(GL_TEXTURE_2D, table_texture);
 
     // Set texture parameters for wrapping.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     // Set texture parameters for filtering.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     // Load the image from bmp file
     BitMapFile *image;
-    char texFileName[] = "img/grid.bmp";
+    char texFileName[] = "img/patterns.bmp";
     if (!(image = getbmp(texFileName))) {
         cout << texFileName << " open error ... exit" << endl;
         exit(1);
