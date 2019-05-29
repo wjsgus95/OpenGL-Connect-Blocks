@@ -155,8 +155,8 @@ int main()
 
     // render loop
     // -----------
+    block_t::num_moves = 0;
     while (!glfwWindowShouldClose(mainWindow)) {
-        block_t::num_moves = 0;
         render();
         glfwPollEvents();
     }
