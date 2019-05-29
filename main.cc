@@ -63,12 +63,18 @@ glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::
 KeyFraming zTKF(5);
 float zTrans;
 
+enum spotlight_t { on, off } spotlight = on;
+
 // for arcball
 float arcballSpeed = 0.2f;
 static rotor_t camRotor(SCR_WIDTH, SCR_HEIGHT, arcballSpeed, true, true );
 
 // for texture
 static unsigned int table_texture, cube_texture, cube_specular_texture; // Array of texture ids.
+
+// for spotlight
+glm::vec3 spotlightPos;
+glm::vec3 spotlightDirection(0.0f, 0.0f, -1.0f);
 
 void print_help() {
     cout << "ConnectBlocks: Make a square!" << endl;
@@ -104,7 +110,6 @@ int main()
     globalShader->setVec3("dirLight.diffuse", 0.6f, 0.6f, 0.6f);
     globalShader->setVec3("dirLight.specular", 0.8f, 0.8f, 0.8f);
 
-
     tableShader->use();
     tableShader->setMat4("projection", projection);
 
@@ -126,6 +131,20 @@ int main()
     
     // Choose random block as starting block.
     my_block = block_t::get_starting_block();
+
+    // spot light
+    spotlightPos = glm::vec3(my_block->grid_x, my_block->grid_y, 5.0f);
+    globalShader->use();
+    globalShader->setVec3("spotLight.position", spotlightPos);
+    globalShader->setVec3("spotLight.direction", spotlightDirection);
+    globalShader->setVec3("spotLight.ambient", 0.3f, 0.3f, 0.3f);
+    globalShader->setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    globalShader->setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    globalShader->setFloat("spotLight.constant", 1.0f);
+    globalShader->setFloat("spotLight.linear", 0.09);
+    globalShader->setFloat("spotLight.quadratic", 0.032);
+    globalShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
+    globalShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
 
     // render loop
     // -----------
@@ -198,6 +217,16 @@ void render() {
     tableShader->setMat4("view", view);
     lineShader->use();
     lineShader->setMat4("view", view);
+
+    if((float)glfwGetTime() >= 7.3f && spotlight == on) {
+        globalShader->use();
+        globalShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(7.5f)));
+        globalShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.5f)));
+    } else if(spotlight == off) {
+        globalShader->use();
+        globalShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(0.0f)));
+        globalShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(0.0f)));
+    }
     
     // Blocks
     globalShader->use();
@@ -223,7 +252,6 @@ void render() {
     tableShader->setMat4("model", model);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, table_texture);
-    //table->draw(globalShader);
     drawLinks(root, (float)glfwGetTime()/5, model, globalShader);
 
     glfwSwapBuffers(mainWindow);
@@ -343,15 +371,19 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         my_block->move_right();
+        spotlight = off;
     }
     else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
         my_block->move_left();
+        spotlight = off;
     }
     else if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
         my_block->move_up();
+        spotlight = off;
     }
     else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
         my_block->move_down();
+        spotlight = off;
     }
     else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         my_block->bind();
