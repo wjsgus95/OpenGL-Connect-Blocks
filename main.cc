@@ -60,7 +60,7 @@ block_t* my_block;
 glm::mat4 projection, view, model;
 vector<block_t*> blocks;
 glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::radians(60.0f)) * 7.0f);
-KeyFraming zTKF(3);
+KeyFraming zTKF(5);
 float zTrans;
 
 // for arcball
@@ -242,7 +242,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void updateAnimData() {
     float timeT = (float)glfwGetTime();
-    if (timeT > 7.0f) {
+    if (timeT > 7.3f) {
         return;
     }
     zTrans = zTKF.getValLinear(timeT);
@@ -254,6 +254,8 @@ void initKeyframes() {
     zTKF.setKey(0, 0, 10.0);
     zTKF.setKey(1, 5.0, 10.0);
     zTKF.setKey(2, 7.0, 0.0);
+    zTKF.setKey(3, 7.2, 0.2);
+    zTKF.setKey(4, 7.3, 0.0);
 }
 
 void initLinks()
