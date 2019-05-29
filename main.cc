@@ -251,12 +251,9 @@ void render() {
     updateAnimData();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, zTrans));
-    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     globalShader->setMat4("model", model);
 
     lineShader->use();
-    //model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.65f));
     lineShader->setMat4("model", model);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, cube_texture);
@@ -360,7 +357,6 @@ void drawLinks(Link *clink, float t, glm::mat4 cmodel, Shader *shader)
     thisMat = glm::translate(thisMat, ctrans);
 
     // interpolates the rotation
-    //glm::quat q = glm::slerp(clink->q1, clink->q2, t);
     glm::vec3 euler = glm::mix(clink->rot1, clink->rot2, t);
     glm::quat q = glm::quat(euler);
 
