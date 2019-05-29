@@ -20,6 +20,7 @@
 #include <getbmp.h>
 #include <keyframe.h>
 #include <text.h>
+#include <Model.h>
 
 #include "def.h"
 #include "block.h"
@@ -27,8 +28,8 @@
 #include "rotor.h"
 #include "link.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
 
 
 using namespace std;
@@ -54,6 +55,7 @@ Shader *globalShader = NULL;
 Shader *tableShader = NULL;
 Shader *lineShader = NULL;
 Shader *textShader = NULL;
+Shader *modelShader = NULL;
 unsigned int SCR_WIDTH = 1024;
 unsigned int SCR_HEIGHT = 768;
 Link* root;
@@ -65,6 +67,7 @@ glm::vec3 cameraPos = glm::vec3(sin(glm::radians(60.0f)) * 7.0f, 0.0f, cos(glm::
 KeyFraming zTKF(5);
 float zTrans;
 Text* text;
+Model* my_model;
 
 enum spotlight_t { on, off } spotlight = on;
 
@@ -95,6 +98,7 @@ int main()
     globalShader = new Shader("shader/lighting.vs", "shader/lighting.fs");
     tableShader = new Shader("shader/table.vs", "shader/table.fs");
     lineShader = new Shader("shader/lines.vs", "shader/lines.fs");
+    modelShader = new Shader("shader/modelLoading.vs", "shader/modelLoading.fs");
     
     // projection matrix
     projection = glm::perspective(glm::radians(45.0f),
@@ -119,6 +123,11 @@ int main()
     lineShader->use();
     lineShader->setMat4("projection", projection);
 
+    modelShader->use();
+    modelShader->setMat4("projection", projection);
+
+    my_model = new Model((GLchar*)"object/dice/dice.obj");
+
     // load texture
     loadTableTexture();
     cube_texture = loadTexture("img/container2.bmp");
@@ -132,6 +141,7 @@ int main()
     // Text initialization.
     textShader = new Shader("shader/text.vs", "shader/text.fs");
     text = new Text("shader/fonts/arial.ttf", textShader, SCR_WIDTH, SCR_HEIGHT);
+
     
     // Initialize blocks.
     block_t::init_random_placement(/*num_blocks*/9);
@@ -235,6 +245,8 @@ void render() {
     tableShader->setMat4("view", view);
     lineShader->use();
     lineShader->setMat4("view", view);
+    modelShader->use();
+    modelShader->setMat4("view", view);
 
     if((float)glfwGetTime() >= 7.3f && spotlight == on) {
         globalShader->use();
@@ -264,6 +276,7 @@ void render() {
     // Table
     tableShader->use();
     model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0, 0.0, 0.1));
     tableShader->setMat4("model", model);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, table_texture);
@@ -271,6 +284,14 @@ void render() {
     
     // Text
     text->RenderText("Moves: " + to_string(block_t::num_moves), 25.0f, SCR_HEIGHT - 75.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    // Model
+    globalShader->use();
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -3.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
+    globalShader->setMat4("model", model);
+    my_model->Draw(globalShader);
 
     glfwSwapBuffers(mainWindow);
 }
@@ -301,7 +322,7 @@ void initKeyframes() {
     zTKF.setKey(1, 5.0, 10.0);
     zTKF.setKey(2, 7.0, 0.0);
     zTKF.setKey(3, 7.2, 0.2);
-    zTKF.setKey(4, 7.3, 0.0);
+    zTKF.setKey(4, 7.3, -0.0);
 }
 
 void initLinks()
