@@ -126,7 +126,7 @@ int main()
     modelShader->use();
     modelShader->setMat4("projection", projection);
 
-    my_model = new Model((GLchar*)"object/dice/dice.obj");
+    my_model = new Model((GLchar*)"object/planet/planet.obj");
 
     // load texture
     loadTableTexture();
@@ -286,14 +286,14 @@ void render() {
     text->RenderText("Moves: " + to_string(block_t::num_moves), 25.0f, SCR_HEIGHT - 75.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Model
-    globalShader->use();
+    modelShader->use();
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -3.0f, 1.5f));
+    //model = glm::translate(model, glm::vec3(0.0f, -3.0f, 1.5f));
     model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
-    model = glm::translate(model, glm::vec3(0.0, 3.0, 5.0));
+    model = glm::translate(model, glm::vec3(0.0, -16.0, 4.0));
     model = glm::rotate(model, (float)0.5 * (float)glfwGetTime(), glm::vec3(0.0, 0.5, 0.5));
-    globalShader->setMat4("model", model);
-    my_model->Draw(globalShader);
+    modelShader->setMat4("model", model);
+    my_model->Draw(modelShader);
 
     glfwSwapBuffers(mainWindow);
 }

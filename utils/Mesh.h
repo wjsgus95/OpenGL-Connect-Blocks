@@ -79,6 +79,7 @@ public:
             shader->use();
             shader->setInt((name+number).c_str(), i);
             // And finally bind the texture
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture( GL_TEXTURE_2D, this->textures[i].id );
         }
         
