@@ -188,12 +188,6 @@ void render() {
     glBindTexture(GL_TEXTURE_2D, texture);
     table->draw(tableShader);
 
-    // right cube
-    //model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-    //globalShader->setMat4("model", model);
-    //cube->draw(globalShader);
-    
     glfwSwapBuffers(mainWindow);
 }
 
@@ -252,15 +246,11 @@ void loadTexture() {
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // Set texture parameters for wrapping.
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
     // Set texture parameters for filtering.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Load the image from bmp file
     BitMapFile *image;
